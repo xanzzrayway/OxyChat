@@ -1,5 +1,5 @@
 // GANTI ini dengan URL server lo (dari cloudflared tunnel di Termux)
-const SERVER_URL = 'https://county-suburban-suited-click.trycloudflare.com';
+const SERVER_URL = 'https://snow-suffered-behavioral-adaptive.trycloudflare.com';
 localStorage.setItem('oxychat_server_url_v1', SERVER_URL);
 
 // Model-model ini dipanggil lewat provider NVIDIA, sisanya default ke Groq.
