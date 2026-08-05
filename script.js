@@ -185,7 +185,7 @@ function applyPlan(p) {
 // Format plan penuh:      'KODENYA': { plan: 'pro' } atau { plan: 'maks' }
 // Format buka model sementara: 'KODENYA': { unlockModel: 'spectrax', hours: 24 }
 const REDEEM_CODES = {
-  'SPECTRAX2026PRO': { unlockModel: 'spectrax', hours: 24 },
+  'PROXRT527BARRTGAN62': { plan: 'maks' },
 };
 function getSpectraxUnlockUntil() {
   const v = parseInt(localStorage.getItem(scopedKey(LS_SPECTRAX_UNLOCK)) || '0', 10);
