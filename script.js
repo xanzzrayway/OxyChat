@@ -2401,10 +2401,10 @@ function makeStreamingRenderer(container, signal) {
   // ====== SETTING KECEPATAN TYPING (edit di sini sesuka lo) ======
   // TICK_INTERVAL = jeda waktu (ms) tiap langkah muncul
   // CHARS_PER_TICK = jumlah HURUF yang muncul setiap langkah (1 = 1 huruf, 2 = 2 huruf, dst)
-  const TEXT_TICK_INTERVAL = 30;
-  const TEXT_CHARS_PER_TICK = 2;
+  const TEXT_TICK_INTERVAL = 25;
+  const TEXT_CHARS_PER_TICK = 5;
   const CODE_TICK_INTERVAL = 30;
-  const CODE_CHARS_PER_TICK = 10;
+  const CODE_CHARS_PER_TICK = 30;
   const THINK_TICK_INTERVAL = 1;
   const THINK_CHARS_PER_TICK = 60;
   // =================================================================
