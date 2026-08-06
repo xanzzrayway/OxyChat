@@ -1,5 +1,5 @@
 // GANTI ini dengan URL server lo (dari cloudflared tunnel di Termux)
-const SERVER_URL = 'https://oriental-recorder-margaret-overseas.trycloudflare.com';
+const SERVER_URL = 'https://county-suburban-suited-click.trycloudflare.com';
 localStorage.setItem('oxychat_server_url_v1', SERVER_URL);
 
 // Model-model ini dipanggil lewat provider NVIDIA, sisanya default ke Groq.
@@ -1220,6 +1220,10 @@ const APIKEY_MODEL_CATALOG = [
 function goToApiKeyPage() {
   window.location.href = 'CreateApikey/';
 }
+
+function goToRequestUpdatePage() {
+  window.location.href = 'Request-Update/';
+}
 function openThemePopup(e) {
   if (e) e.stopPropagation();
   renderPersonalizeModal();
@@ -2401,10 +2405,10 @@ function makeStreamingRenderer(container, signal) {
   // ====== SETTING KECEPATAN TYPING (edit di sini sesuka lo) ======
   // TICK_INTERVAL = jeda waktu (ms) tiap langkah muncul
   // CHARS_PER_TICK = jumlah HURUF yang muncul setiap langkah (1 = 1 huruf, 2 = 2 huruf, dst)
-  const TEXT_TICK_INTERVAL = 25;
-  const TEXT_CHARS_PER_TICK = 5;
+  const TEXT_TICK_INTERVAL = 30;
+  const TEXT_CHARS_PER_TICK = 2;
   const CODE_TICK_INTERVAL = 30;
-  const CODE_CHARS_PER_TICK = 30;
+  const CODE_CHARS_PER_TICK = 10;
   const THINK_TICK_INTERVAL = 1;
   const THINK_CHARS_PER_TICK = 60;
   // =================================================================
