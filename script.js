@@ -185,7 +185,7 @@ function applyPlan(p) {
 // Format plan penuh:      'KODENYA': { plan: 'pro' } atau { plan: 'maks' }
 // Format buka model sementara: 'KODENYA': { unlockModel: 'spectrax', hours: 24 }
 const REDEEM_CODES = {
-  'PROXRT527BARRTGAN62': { plan: 'maks' },
+  'SPECTRAX2026PRO': { unlockModel: 'spectrax', hours: 24 },
 };
 function getSpectraxUnlockUntil() {
   const v = parseInt(localStorage.getItem(scopedKey(LS_SPECTRAX_UNLOCK)) || '0', 10);
@@ -1311,6 +1311,49 @@ function setTextSize(s) {
   renderPersonalizeModal();
   closeTextSizePopup();
 }
+
+// ==== Thinking (semua model bisa mikir dulu sebelum jawab) + Upaya (level kedalaman mikir) ====
+const LS_THINKING = 'oxychat_thinking_v1';
+const LS_EFFORT = 'oxychat_effort_v1';
+const EFFORT_LABELS = { rendah: 'Rendah', sedang: 'Sedang', tinggi: 'Tinggi', maks: 'Maks' };
+const EFFORT_INSTRUCTIONS = {
+  rendah: 'Sebelum jawab, mikir singkat aja (1-2 kalimat) di dalam tag <think>...</think>, to the point.',
+  sedang: 'Sebelum jawab, mikir langkah-langkah utamanya secara ringkas di dalam tag <think>...</think>.',
+  tinggi: 'Sebelum jawab, mikir agak mendalam di dalam tag <think>...</think>, pertimbangkan beberapa sudut pandang atau kemungkinan.',
+  maks: 'Sebelum jawab, mikir super detail dan step-by-step di dalam tag <think>...</think>, pertimbangkan berbagai kemungkinan, edge case, dan cek ulang logikanya sebelum yakin sama jawabannya.'
+};
+let thinkingEnabled = localStorage.getItem(LS_THINKING) === '1';
+let currentEffort = EFFORT_LABELS[localStorage.getItem(LS_EFFORT)] ? localStorage.getItem(LS_EFFORT) : 'sedang';
+function getThinkingInstruction() {
+  if (!thinkingEnabled) return '';
+  return '\n\n' + EFFORT_INSTRUCTIONS[currentEffort] +
+    ' WAJIB bungkus SELURUH proses mikirnya di dalam tag <think> dan </think> (buka tag di awal, tutup sebelum mulai jawaban final). Jawaban final WAJIB ditulis SETELAH tag </think> ditutup, di luar tag itu.';
+}
+function onThinkingToggle(el) {
+  thinkingEnabled = el.checked;
+  localStorage.setItem(LS_THINKING, thinkingEnabled ? '1' : '0');
+}
+function openEffortPopup(e) {
+  if (e) e.stopPropagation();
+  renderEffortPopup();
+  openSettingPopup('effort-popup', 'effort-row');
+}
+function closeEffortPopup() { document.getElementById('effort-popup').classList.remove('show'); }
+function setEffort(v) {
+  if (!EFFORT_LABELS[v]) v = 'sedang';
+  currentEffort = v;
+  localStorage.setItem(LS_EFFORT, currentEffort);
+  renderEffortPopup();
+  closeEffortPopup();
+}
+function renderEffortPopup() {
+  document.getElementById('effort-current-label').textContent = EFFORT_LABELS[currentEffort] || 'Sedang';
+  document.querySelectorAll('#effort-popup .theme-option').forEach(el => {
+    el.classList.toggle('active', el.dataset.effortValue === currentEffort);
+  });
+}
+document.getElementById('thinking-toggle').checked = thinkingEnabled;
+renderEffortPopup();
 
 document.getElementById('custom-instr-textarea').addEventListener('input', updateCustomInstrCount);
 
@@ -2500,7 +2543,8 @@ async function sendMulti(text) {
       ' Tolong = Bantu, Terima Kasih = Makasih/Makasi, Sama-Sama = Sama-sama/Sip.' +
       ' Jangan pake kata "bro", "cuy", "bang", atau "gan". Boleh pake emoji sesekali secukupnya, jangan berlebihan.' +
       (userName ? ' Nama pengguna adalah "' + userName + '". Panggil sesekali secara natural.' : '') +
-      (customInstructions ? '\n\n=== INSTRUKSI KHUSUS DARI USER (WAJIB DIPATUHI) ===\n' + customInstructions : '')
+      (customInstructions ? '\n\n=== INSTRUKSI KHUSUS DARI USER (WAJIB DIPATUHI) ===\n' + customInstructions : '') +
+      getThinkingInstruction()
   }];
 
   const results = new Array(models.length).fill(null);
@@ -2739,7 +2783,8 @@ const systemMsg = [
       ' Lu SENDIRI gabisa generate gambar langsung lewat chat biasa. Kalo user minta dibuatin/gambarin sesuatu, lu HARUS bilang kalo mereka harus pencet tombol "Generate Image" yang ada di chatbox dulu, baru ketik deskripsi gambarnya di situ. Jangan pernah pura-pura bisa generate gambar sendiri atau pake format tag apapun.' +
       ' ' +
       (customInstructions ? '\n\n=== INSTRUKSI KHUSUS DARI USER (WAJIB DIPATUHI, prioritas tinggi) ===\n' + customInstructions + '\n' : '') +
-      searchContext
+      searchContext +
+      getThinkingInstruction()
   }
 ];
 
