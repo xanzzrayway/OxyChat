@@ -781,6 +781,8 @@
   .sheet-attach-label { font-size: 13px; font-weight: 500; color: var(--text-dim); }
   .sheet-divider { border: none; border-top: 1px solid var(--border); margin-bottom: 16px; }
   .sheet-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+  #effort-row { cursor: pointer; }
+  #thinking-toggle-row, #effort-row { padding: 10px 2px; }
   .sheet-toggle-left { display: flex; align-items: center; gap: 10px; }
   .sheet-toggle-icon { width: 34px; height: 34px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .sheet-toggle-icon svg { color: var(--text-dim); }
@@ -1357,7 +1359,7 @@
   .theme-option.active .theme-check { opacity: 1; }
   .theme-swatch { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); }
 
-  #font-popup, #uisize-popup, #textsize-popup {
+  #font-popup, #uisize-popup, #textsize-popup, #effort-popup {
     display: none; position: fixed; z-index: 310;
     width: 190px;
     background: var(--white); border: 1px solid var(--border);
@@ -1366,7 +1368,7 @@
     animation: ctxIn 0.12s cubic-bezier(.34,1.3,.64,1);
     max-height: 320px; overflow-y: auto;
   }
-  #font-popup.show, #uisize-popup.show, #textsize-popup.show { display: block; }
+  #font-popup.show, #uisize-popup.show, #textsize-popup.show, #effort-popup.show { display: block; }
 
   #welcome-overlay {
     display: none; position: fixed; inset: 0; z-index: 400;
