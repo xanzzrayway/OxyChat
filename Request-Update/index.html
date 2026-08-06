@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <!-- Kunci layar biar ga bisa digeser atau di-pinch zoom -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Request Update OxyChat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <button id="back-btn" onclick="goBack()" aria-label="Kembali">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4l-6 5 6 5"/></svg>
+    </button>
+
+    <div class="container">
+        <div class="header">
+            <h1>Minta Update OxyChat</h1>
+            <p>Kirim saran atau request fitur baru langsung lewat email</p>
+        </div>
+
+        <div id="limitInfo" class="limit-info">
+            Pesan Berhasil Terkirim! (Maksimal 1 kali kirim)
+        </div>
+
+        <form id="emailForm">
+            <!-- Key lu udah aktif di sini -->
+            <input type="hidden" name="access_key" value="a0fdb913-6b84-4d5c-b3ba-8adc01c9e010">
+
+            <div class="form-group">
+                <label for="senderName">Nama Pengirim</label>
+                <input type="text" name="name" id="senderName" class="form-control" placeholder="Nama lu..." required autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Balasan (Reply-To)</label>
+                <input type="email" name="email" id="email" class="form-control" placeholder="nama@email.com" required autocomplete="off">
+            </div>
+
+            <div class="form-group" style="display: none;">
+                <input type="text" name="subject" id="subject" value="Request Update OxyChat" required readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Pesan / Fitur Baru</label>
+                <textarea name="message" id="message" class="form-control" placeholder="Tulis update fitur apa aja yg lu pengen ada di OxyChat..." required></textarea>
+            </div>
+
+            <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
+
+            <button type="submit" class="btn-submit" id="btnSubmit">
+                Kirim Pesan
+            </button>
+        </form>
+    </div>
+
+    <!-- Full Screen Overlay (Loading & Success) -->
+    <div id="loadingOverlay" class="overlay">
+        <div class="overlay-content">
+            <!-- Loading State -->
+            <div id="loadingState">
+                <div class="loader"></div>
+                <div class="loading-text">Sedang Mengirim...</div>
+            </div>
+            
+            <!-- Success Centang State -->
+            <div id="successState" class="success-state">
+                <svg class="checkmark-svg" viewBox="0 0 52 52">
+                    <circle class="checkmark-circle" cx="26" cy="26" r="25" />
+                    <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+                <div class="success-title">Pesan Berhasil Terkirim!</div>
+                <div class="success-desc">Rencana update lu udah masuk ke email bidzqwerty@gmail.com</div>
+                <button type="button" class="btn-done" id="btnDone">Selesai</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pop-up Summary Detail Baru (UI Kecil di Tengah) -->
+    <div id="summaryOverlay" class="overlay">
+        <div class="overlay-content">
+            <div class="summary-card">
+                <h2>Rincian Request</h2>
+                
+                <div class="summary-item">
+                    <span class="summary-label">Nama Pengguna</span>
+                    <span class="summary-value" id="sumName">-</span>
+                </div>
+
+                <div class="summary-item">
+                    <span class="summary-label">Email</span>
+                    <span class="summary-value" id="sumEmail">-</span>
+                </div>
+
+                <div class="summary-item">
+                    <span class="summary-label">Subject</span>
+                    <span class="summary-value" id="sumSubject">-</span>
+                </div>
+
+                <div class="summary-item">
+                    <span class="summary-label">Pesan</span>
+                    <div class="summary-message-box" id="sumMessage">-</div>
+                </div>
+
+                <button type="button" class="btn-close-summary" id="btnCloseSummary">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+          </html>
