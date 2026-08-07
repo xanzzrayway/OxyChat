@@ -1,5 +1,5 @@
 // GANTI ini dengan URL server lo (dari cloudflared tunnel di Termux)
-const SERVER_URL = 'https://dating-assurance-merely-announces.trycloudflare.com';
+const SERVER_URL = 'https://journal-continuity-distances-edwards.trycloudflare.com';
 localStorage.setItem('oxychat_server_url_v1', SERVER_URL);
 
 // Model-model ini dipanggil lewat provider NVIDIA, sisanya default ke Groq.
@@ -215,6 +215,7 @@ const MODELS = [
 let sessions = {};
 let activeId = null;
 let isStreaming = false;
+let activeDraftFlush = null; // dipanggil kalo tab/app di-background pas AI lagi ngetik, biar draft ke-save duluan
 let abortController = null;
 let userScrolledUp = false;
 let webSearchEnabled = false;
@@ -579,6 +580,32 @@ try {
   }
 } catch(e) { sessions = {}; }
 
+// Kalo app sempet ke-reload/ke-suspend pas AI lagi ngetik (misal keluar app bentar di HP),
+// balasan yang lagi jalan itu ketinggalan sebagai draft di localStorage. Beresin di sini pas load:
+// - kalo draft-nya udah ada isinya, tetep tampilin (tandain putus), jangan sampe ilang.
+// - kalo draft-nya kosong (belom sempet nerima apa-apa), buang aja.
+(function cleanupStreamingDrafts() {
+  let changed = false;
+  Object.values(sessions).forEach(s => {
+    if (!s || !Array.isArray(s.messages)) return;
+    for (let i = s.messages.length - 1; i >= 0; i--) {
+      const m = s.messages[i];
+      if (m && m.draft) {
+        changed = true;
+        if (m.content && m.content.trim()) {
+          delete m.draft;
+          m.interrupted = true;
+        } else {
+          s.messages.splice(i, 1);
+        }
+      }
+    }
+  });
+  if (changed) {
+    try { localStorage.setItem(scopedKey(LS_KEY), JSON.stringify(sessions)); } catch(e) {}
+  }
+})();
+
 function resolveActiveId() {
   let id = localStorage.getItem(scopedKey(LS_ACTIVE)) || null;
   if (id && sessions[id]) return id;
@@ -606,6 +633,20 @@ $msgs.addEventListener('scroll', () => {
 function forceScrollBottom() {
   if (!userScrolledUp) $msgs.scrollTop = $msgs.scrollHeight;
 }
+
+// Kalo user keluar app/tab bentar pas AI lagi ngetik (streaming), langsung flush draft ke localStorage
+// biar kalo browser/OS reload halamannya pas di-background, balasan yang udah kebentuk gak ilang.
+// Terus pas balik lagi ke app, paksa render ulang chat aktif biar konten yang sempet ketinggalan tetep muncul.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (activeDraftFlush) activeDraftFlush();
+  } else {
+    if (activeStream && activeStream.sessionId === activeId) {
+      renderMessages();
+    }
+  }
+});
+window.addEventListener('pagehide', () => { if (activeDraftFlush) activeDraftFlush(); });
 function scrollToBottomManual() {
   userScrolledUp = false;
   $msgs.scrollTo({ top: $msgs.scrollHeight, behavior: 'smooth' });
@@ -1331,11 +1372,30 @@ let currentEffort = EFFORT_LABELS[localStorage.getItem(LS_EFFORT)] ? localStorag
 function getThinkingInstruction() {
   if (!thinkingEnabled) return '';
   return '\n\n' + EFFORT_INSTRUCTIONS[currentEffort] +
-    ' WAJIB bungkus SELURUH proses mikirnya di dalam tag <think> dan </think> (buka tag di awal, tutup sebelum mulai jawaban final). Jawaban final WAJIB ditulis SETELAH tag </think> ditutup, di luar tag itu.';
+    ' Aturan ini WAJIB dipatuhi APAPUN model/karakter lu, gak peduli lu biasanya langsung jawab atau kagak.' +
+    ' WAJIB bungkus SELURUH proses mikirnya di dalam tag <think> dan </think> (buka tag <think> di baris PALING AWAL sebelum nulis apapun lain, tutup dengan </think> sebelum mulai jawaban final).' +
+    ' Jawaban final WAJIB ditulis SETELAH tag </think> ditutup, di luar tag itu. JANGAN PERNAH skip proses mikir ini, JANGAN PERNAH langsung jawab tanpa tag <think> lebih dulu.';
 }
 function onThinkingToggle(el) {
   thinkingEnabled = el.checked;
   localStorage.setItem(LS_THINKING, thinkingEnabled ? '1' : '0');
+}
+// Kirim parameter reasoning native (kalo providernya support, dia bakal kepake; kalo enggak ya diabaikan aja).
+// Ini biar model yang emang punya mode reasoning bawaan (bukan cuma ngandelin instruksi prompt) beneran mikir juga.
+const EFFORT_TO_LEVEL = { rendah: 'low', sedang: 'medium', tinggi: 'high', maks: 'high' };
+function getReasoningExtraParams(modelValue) {
+  if (!thinkingEnabled) return {};
+  // Parameter reasoning native ini gak semua provider/model ngerti formatnya (bisa bikin request-nya
+  // ditolak alias error 400 kalo dikasih field yang gak dikenal). Aman-nya cuma dikirim ke Groq, dan cuma
+  // field yang emang didukung Groq (reasoning_effort/reasoning_format). "enable_thinking" & "thinking" itu
+  // format punya provider lain (bukan Groq), makanya di-reject servernya kalo dipaksa kirim ke Groq.
+  // Provider selain Groq tetep dapet efek mikir dari instruksi prompt (getThinkingInstruction).
+  if (getProviderName(modelValue) !== 'groq') return {};
+  const level = EFFORT_TO_LEVEL[currentEffort] || 'medium';
+  return {
+    reasoning_effort: level,
+    reasoning_format: 'parsed'
+  };
 }
 function openEffortPopup(e) {
   if (e) e.stopPropagation();
@@ -1686,40 +1746,46 @@ document.getElementById('rename-input').addEventListener('keydown', e => {
 });
 
 let modalCodeContent = '', modalCodeLang = 'html';
+let modalCodeTitle = 'Code';
 function openModal(title, lang, code) {
-  modalCodeContent = code; modalCodeLang = lang;
-  document.getElementById('modal-title-text').textContent = title;
+  modalCodeContent = code; modalCodeLang = lang; modalCodeTitle = title || guessTitleFromCode(code, lang);
   document.getElementById('modal-code-pre').textContent = code;
   document.getElementById('modal-body').classList.remove('show-preview');
-  document.getElementById('tab-code').classList.add('active');
-  document.getElementById('tab-preview').classList.remove('active');
   document.getElementById('modal-iframe').srcdoc = '';
+  updateModalViewToggleLabel(false);
   document.getElementById('code-modal').classList.add('open');
 }
 function closeModal() { document.getElementById('code-modal').classList.remove('open'); }
+function updateModalViewToggleLabel(showingPreview) {
+  document.getElementById('modal-view-toggle-label').textContent = showingPreview ? 'Lihat Kode' : 'Preview';
+}
 function switchTab(tab) {
   const body = document.getElementById('modal-body');
   if (tab === 'preview') {
     body.classList.add('show-preview');
-    document.getElementById('tab-preview').classList.add('active');
-    document.getElementById('tab-code').classList.remove('active');
     const iframe = document.getElementById('modal-iframe');
     if (!iframe.srcdoc) iframe.srcdoc = modalCodeContent;
   } else {
     body.classList.remove('show-preview');
-    document.getElementById('tab-code').classList.add('active');
-    document.getElementById('tab-preview').classList.remove('active');
   }
+  updateModalViewToggleLabel(tab === 'preview');
+}
+function toggleModalView() {
+  const isPreview = document.getElementById('modal-body').classList.contains('show-preview');
+  switchTab(isPreview ? 'code' : 'preview');
+  closeModalMenu();
 }
 function toggleModalMenu() { document.getElementById('modal-menu-dd').classList.toggle('open'); }
 function closeModalMenu()  { document.getElementById('modal-menu-dd').classList.remove('open'); }
 function modalCopyCode() { navigator.clipboard.writeText(modalCodeContent).then(() => toast('Kode disalin!')); closeModalMenu(); }
 function modalDownloadCode() {
-  const extMap = { html:'html', javascript:'js', js:'js', python:'py', css:'css', typescript:'ts', json:'json', bash:'sh', shell:'sh' };
-  const ext = extMap[modalCodeLang.toLowerCase()] || 'txt';
+  const extMap = { html:'html', htm:'html', javascript:'js', js:'js', python:'py', py:'py', css:'css', typescript:'ts', json:'json', bash:'sh', shell:'sh' };
+  // Kalo judulnya udah punya ekstensi (misal "index.html"), pake itu apa adanya biar sesuai nama filenya.
+  const hasExt = /\.[a-z0-9]+$/i.test(modalCodeTitle);
+  const fileName = hasExt ? modalCodeTitle : modalCodeTitle + '.' + (extMap[(modalCodeLang||'').toLowerCase()] || 'txt');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([modalCodeContent], {type:'text/plain'}));
-  a.download = 'code.' + ext; a.click();
+  a.download = fileName; a.click();
   closeModalMenu(); toast('File diunduh');
 }
 
@@ -1807,12 +1873,41 @@ function highlightCode(code, lang) {
   return s;
 }
 
+const LANG_EXT = {
+  html:'html', htm:'html', xml:'xml', css:'css', scss:'scss', sass:'sass',
+  javascript:'js', js:'js', jsx:'jsx', typescript:'ts', ts:'ts', tsx:'tsx',
+  python:'py', py:'py', json:'json', bash:'sh', shell:'sh', sh:'sh',
+  java:'java', c:'c', cpp:'cpp', 'c++':'cpp', cs:'cs', go:'go', rust:'rs', rs:'rs',
+  php:'php', ruby:'rb', rb:'rb', sql:'sql', yaml:'yml', yml:'yml', kotlin:'kt', swift:'swift'
+};
+// Nama file langsung ketauan begitu ada penanda di kodenya, gak perlu nunggu kode selesai.
 function guessTitleFromCode(code, lang) {
+  const l = (lang || '').toLowerCase();
   const t = code.match(/<title>(.*?)<\/title>/i);
-  if (t) return t[1].trim();
+  if (t && t[1].trim()) return t[1].trim() + (l === 'html' || l === 'htm' ? '.html' : '');
+  const fname = code.match(/(?:\/\/|#|<!--)\s*(?:file|filename)\s*:\s*([\w.\-\/]+)/i);
+  if (fname) return fname[1].trim();
   const f = code.match(/(?:function|def|class)\s+([A-Za-z_][A-Za-z0-9_]*)/);
+  const ext = LANG_EXT[l] || (l && l !== 'code' ? l : '');
+  if (f && ext) return f[1] + '.' + ext;
   if (f) return f[1];
-  return lang && lang !== 'code' ? lang.toUpperCase() + ' Code' : 'Code';
+  if (l === 'html' || l === 'htm') return 'index.html';
+  if (l === 'css' || l === 'scss' || l === 'sass') return 'style.' + l;
+  if (['javascript','js'].includes(l)) return 'script.js';
+  if (ext) return 'code.' + ext;
+  return 'Code';
+}
+const LANG_DISPLAY = {
+  js:'JavaScript', javascript:'JavaScript', ts:'TypeScript', typescript:'TypeScript',
+  py:'Python', python:'Python', html:'HTML', htm:'HTML', css:'CSS', scss:'SCSS', sass:'Sass',
+  json:'JSON', bash:'Bash', shell:'Shell', sh:'Shell', java:'Java', c:'C', cpp:'C++', 'c++':'C++',
+  cs:'C#', go:'Go', rust:'Rust', rs:'Rust', php:'PHP', ruby:'Ruby', rb:'Ruby', sql:'SQL',
+  yaml:'YAML', yml:'YAML', kotlin:'Kotlin', swift:'Swift', jsx:'JSX', tsx:'TSX', xml:'XML'
+};
+// Header codebox nampilin nama bahasanya (HTML/JS/Python/dll), bukan nama file.
+function guessLangLabel(lang) {
+  const l = (lang || '').toLowerCase();
+  return LANG_DISPLAY[l] || (l && l !== 'code' ? l.toUpperCase() : 'Code');
 }
 function renderMDInline(text) {
   text = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1844,18 +1939,22 @@ function buildCodeBlock(lang, code) {
   hdr.className = 'code-block-header';
   const langLabel = document.createElement('span');
   langLabel.className = 'code-block-lang';
-  langLabel.textContent = lang || 'code';
+  langLabel.textContent = guessLangLabel(lang);
   const actions = document.createElement('div');
   actions.className = 'code-block-actions';
   const copyBtn = document.createElement('button');
   copyBtn.className = 'code-block-btn';
-  copyBtn.innerHTML = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="8" height="8" rx="1.5"/><path d="M2 10V2h8"/></svg> Salin';
+  copyBtn.title = 'Salin';
+  copyBtn.setAttribute('aria-label', 'Salin');
+  copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2.5"/><path d="M4.5 15.5A2 2 0 0 1 3 13.5v-9A2 2 0 0 1 5 2.5h9a2 2 0 0 1 2 2"/></svg>';
   copyBtn.onclick = () => navigator.clipboard.writeText(code).then(() => toast('Kode disalin!'));
   actions.appendChild(copyBtn);
   if (lang === 'html' || lang === 'htm') {
     const prevBtn = document.createElement('button');
-    prevBtn.className = 'code-block-btn';
-    prevBtn.innerHTML = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="12" height="10" rx="1.5"/><path d="M1 5h12"/></svg> Preview';
+    prevBtn.className = 'code-block-btn code-block-btn-play';
+    prevBtn.title = 'Preview';
+    prevBtn.setAttribute('aria-label', 'Preview');
+    prevBtn.innerHTML = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><path d="M3 1.8v10.4c0 .7.75 1.13 1.35.76l8.2-5.2a.9.9 0 0 0 0-1.52l-8.2-5.2C3.75.67 3 1.1 3 1.8z"/></svg>';
     prevBtn.onclick = () => { openModal(title, lang, code); switchTab('preview'); };
     actions.appendChild(prevBtn);
   }
@@ -1900,6 +1999,7 @@ function renderMDFull(text, container) {
     thinkContent += (thinkContent ? '\n\n' : '') + m[1].trim();
   }
   const rest = text.replace(thinkRe, '');
+  if (thinkContent) container.appendChild(buildThinkBlock(thinkContent));
   appendFenceParts(rest, container);
 }
 
@@ -2096,6 +2196,81 @@ function showEmptyState() {
     + '<button class="es-pill es-pill-image" onclick="activateImageGenMode()"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="10" height="9" rx="1.3"/><circle cx="4.5" cy="5" r="1"/><path d="M1.8 8.8l2.5-2.6 2 2 2.4-2.9 2.3 2.9"/></svg>Generate Image</button>';
   $msgs.appendChild(es);
 }
+function toPlainSpeech(text) {
+  let t = stripThinkBlocks(text || '');
+  t = t.replace(/```[\s\S]*?```/g, ' Ada blok kode di sini. ');
+  t = t.replace(/`([^`]+)`/g, '$1');
+  t = t.replace(/!\[[^\]]*\]\([^)]+\)/g, '');
+  t = t.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  t = t.replace(/[*_#>~]/g, '');
+  t = t.replace(/\n{2,}/g, '. ');
+  t = t.replace(/\n/g, ' ');
+  return t.trim();
+}
+let activeUtterance = null, activeSoundBtn = null;
+function toggleSpeech(text, btn) {
+  if (!('speechSynthesis' in window)) { toast('Browser gak support text-to-speech'); return; }
+  if (activeSoundBtn === btn) {
+    speechSynthesis.cancel();
+    btn.classList.remove('speaking');
+    activeUtterance = null; activeSoundBtn = null;
+    return;
+  }
+  speechSynthesis.cancel();
+  if (activeSoundBtn) activeSoundBtn.classList.remove('speaking');
+  const plain = toPlainSpeech(text);
+  if (!plain) { toast('Gak ada teks buat dibacain'); return; }
+  const utter = new SpeechSynthesisUtterance(plain);
+  utter.lang = 'id-ID';
+  const reset = () => { btn.classList.remove('speaking'); if (activeSoundBtn === btn) { activeUtterance = null; activeSoundBtn = null; } };
+  utter.onend = reset; utter.onerror = reset;
+  activeUtterance = utter; activeSoundBtn = btn;
+  btn.classList.add('speaking');
+  speechSynthesis.speak(utter);
+}
+function buildMsgActionBar(m, content) {
+  const bar = document.createElement('div');
+  bar.className = 'msg-action-bar';
+
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'msg-action-btn';
+  copyBtn.title = 'Salin';
+  copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2.5"/><path d="M4.5 15.5A2 2 0 0 1 3 13.5v-9A2 2 0 0 1 5 2.5h9a2 2 0 0 1 2 2"/></svg>';
+  copyBtn.onclick = () => navigator.clipboard.writeText(stripThinkBlocks(content)).then(() => toast('Disalin!'));
+  bar.appendChild(copyBtn);
+
+  const upBtn = document.createElement('button');
+  upBtn.className = 'msg-action-btn' + (m.feedback === 'up' ? ' active' : '');
+  upBtn.title = 'Suka';
+  upBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>';
+  const downBtn = document.createElement('button');
+  downBtn.className = 'msg-action-btn' + (m.feedback === 'down' ? ' active' : '');
+  downBtn.title = 'Gak suka';
+  downBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>';
+  upBtn.onclick = () => {
+    m.feedback = (m.feedback === 'up') ? null : 'up';
+    upBtn.classList.toggle('active', m.feedback === 'up');
+    downBtn.classList.remove('active');
+    saveSessions();
+  };
+  downBtn.onclick = () => {
+    m.feedback = (m.feedback === 'down') ? null : 'down';
+    downBtn.classList.toggle('active', m.feedback === 'down');
+    upBtn.classList.remove('active');
+    saveSessions();
+  };
+  bar.appendChild(upBtn);
+  bar.appendChild(downBtn);
+
+  const soundBtn = document.createElement('button');
+  soundBtn.className = 'msg-action-btn';
+  soundBtn.title = 'Dengarkan';
+  soundBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+  soundBtn.onclick = () => toggleSpeech(content, soundBtn);
+  bar.appendChild(soundBtn);
+
+  return bar;
+}
 function renderMessages() {
   $msgs.innerHTML = '';
   const sess = sessions[activeId];
@@ -2141,7 +2316,7 @@ function renderMessages() {
         }
       });
       $msgs.appendChild(turn);
-    } else if (m.role === 'assistant') {
+    } else if (m.role === 'assistant' && !m.draft) {
       const row = document.createElement('div');
       row.className = 'msg-row ai';
       const cnt = document.createElement('div');
@@ -2149,11 +2324,18 @@ function renderMessages() {
       row.appendChild(cnt);
       $msgs.appendChild(row);
       renderMDFull(content, cnt);
+      if (m.interrupted) {
+        const note = document.createElement('div');
+        note.style.cssText = 'font-size:11.5px;color:var(--text-muted);font-style:italic;margin-top:4px;';
+        note.textContent = 'Terputus pas lagi jalan (app sempet ketutup/direload), balasan ini gak lengkap.';
+        cnt.appendChild(note);
+      }
       if (webSearchEnabled) {
         const srcs = extractSources(stripThinkBlocks(content));
         const srcEl = buildSourcesEl(srcs);
         if (srcEl) cnt.appendChild(srcEl);
       }
+      cnt.appendChild(buildMsgActionBar(m, content));
     }
   });
   if (activeStream && activeStream.sessionId === activeId) {
@@ -2203,18 +2385,22 @@ function makeStreamingRenderer(container, signal) {
     hdr.className = 'code-block-header';
     const langLabel = document.createElement('span');
     langLabel.className = 'code-block-lang';
-    langLabel.textContent = lang || 'code';
+    langLabel.textContent = guessLangLabel(lang);
     const actions = document.createElement('div');
     actions.className = 'code-block-actions';
     const copyBtn = document.createElement('button');
     copyBtn.className = 'code-block-btn';
-    copyBtn.innerHTML = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="8" height="8" rx="1.5"/><path d="M2 10V2h8"/></svg> Salin';
+    copyBtn.title = 'Salin';
+    copyBtn.setAttribute('aria-label', 'Salin');
+    copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2.5"/><path d="M4.5 15.5A2 2 0 0 1 3 13.5v-9A2 2 0 0 1 5 2.5h9a2 2 0 0 1 2 2"/></svg>';
     actions.appendChild(copyBtn);
     let prevBtn = null;
     if (lang === 'html' || lang === 'htm') {
       prevBtn = document.createElement('button');
-      prevBtn.className = 'code-block-btn';
-      prevBtn.innerHTML = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="12" height="10" rx="1.5"/><path d="M1 5h12"/></svg> Preview';
+      prevBtn.className = 'code-block-btn code-block-btn-play';
+      prevBtn.title = 'Preview';
+      prevBtn.setAttribute('aria-label', 'Preview');
+      prevBtn.innerHTML = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><path d="M3 1.8v10.4c0 .7.75 1.13 1.35.76l8.2-5.2a.9.9 0 0 0 0-1.52l-8.2-5.2C3.75.67 3 1.1 3 1.8z"/></svg>';
       actions.appendChild(prevBtn);
     }
     hdr.appendChild(langLabel);
@@ -2227,7 +2413,7 @@ function makeStreamingRenderer(container, signal) {
     wrap.appendChild(body);
     container.appendChild(wrap);
 
-    const ref = { type:'code', el:wrap, pre, body, lang, copyBtn, prevBtn, prevContent:'', lastHighlightLen:0, closed:false, highlightedOnce:false };
+    const ref = { type:'code', el:wrap, pre, body, lang, langLabel, copyBtn, prevBtn, prevContent:'', lastHighlightLen:0, closed:false, highlightedOnce:false };
     nodes[i] = ref;
     copyBtn.onclick = () => navigator.clipboard.writeText(ref.prevContent||'').then(() => toast('Kode disalin!'));
     if (prevBtn) prevBtn.onclick = () => {
@@ -2275,6 +2461,8 @@ function makeStreamingRenderer(container, signal) {
 
   function updateCodeNode(ref, newContent, isClosed) {
     if (ref.prevContent === newContent && ref.closed === isClosed) return;
+    // langLabel selalu nampilin nama bahasa (HTML/JS/dll) dan gak diubah-ubah lagi selama/sesudah ngoding.
+    // Nama file cuma dipake internal pas buka modal preview / download, bukan buat header codebox.
 
     const grew = newContent.length > ref.prevContent.length && newContent.startsWith(ref.prevContent);
 
@@ -2560,15 +2748,18 @@ async function sendMulti(text) {
         model: m.value,
         messages: [...systemMsg, ...apiMessages],
         stream: false,
-        temperature: 1.0
+        temperature: 1.0,
+        ...getReasoningExtraParams(m.value)
       }, { signal: ac.signal });
       if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error((e && e.error && e.error.message) || 'HTTP ' + res.status); }
       const data = await res.json();
-      const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '(kosong)';
+      const msgObj = (data.choices && data.choices[0] && data.choices[0].message) || {};
+      const reasoningTxt = msgObj.reasoning_content || msgObj.reasoning || '';
+      const content = (reasoningTxt ? ('<think>' + reasoningTxt + '</think>') : '') + (msgObj.content || (reasoningTxt ? '' : '(kosong)'));
       const clean = stripThinkBlocks(content);
       results[i] = { model: m.value, label: m.label, content: clean, error: null };
       body.innerHTML = '';
-      renderMDFull(clean, body);
+      renderMDFull(content, body);
       if (data.usage) { sess.tokens = (sess.tokens || 0) + (data.usage.total_tokens || 0); $tokenInfo.textContent = '~' + sess.tokens + ' tok'; }
     } catch(err) {
       const msg = err.name === 'AbortError' ? 'Dihentikan' : ('Error: ' + err.message);
@@ -2642,6 +2833,22 @@ async function send() {
   sess.messages.push({ role:'user', content: typeof userMsgContent === 'string' ? userMsgContent : text });
   sess.ts = Date.now(); saveSessions(); renderHistList();
   incrementMsgCount();
+
+  // Draft placeholder buat balasan AI, biar kalo app ke-reload pas lagi jalan (keluar app bentar dll),
+  // isi yang udah sempet nyampe tetep kesimpen di localStorage, gak ilang pas balik lagi.
+  sess.messages.push({ role:'assistant', content:'', draft:true });
+  const draftIdx = sess.messages.length - 1;
+  let lastDraftSaveAt = 0;
+  function saveDraftThrottled(force) {
+    const now = Date.now();
+    if (!force && now - lastDraftSaveAt < 700) return;
+    lastDraftSaveAt = now;
+    if (sess.messages[draftIdx] && sess.messages[draftIdx].draft) {
+      sess.messages[draftIdx].content = full;
+      saveSessions();
+    }
+  }
+  activeDraftFlush = () => saveDraftThrottled(true);
 
   const userRow = document.createElement('div');
   userRow.className = 'msg-row user';
@@ -2722,6 +2929,11 @@ async function send() {
   }
 
   let full = '', first = true, streamUpdate = null;
+  let reasoningBuf = '', contentBuf = '', reasoningClosed = false;
+  function composeFull() {
+    if (!reasoningBuf) return contentBuf;
+    return '<think>' + reasoningBuf + (reasoningClosed ? '</think>' : '') + contentBuf;
+  }
 
   activeStream = {
     sessionId: activeId,
@@ -2740,7 +2952,7 @@ async function send() {
     }
   };
 
-  const apiMessages = sess.messages.slice(0, -1).concat([{ role:'user', content: userMsgContent }]);
+  const apiMessages = sess.messages.slice(0, -2).concat([{ role:'user', content: userMsgContent }]);
 
   let searchResults = null;
   let searchContext = '';
@@ -2815,7 +3027,8 @@ const systemMsg = [
       model: modelForThisRequest,
       messages: [...systemMsg, ...finalApiMessages],
       stream: true,
-      temperature: 1.0
+      temperature: 1.0,
+      ...getReasoningExtraParams(modelForThisRequest)
     }, { signal: ac.signal });
     if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error((e&&e.error&&e.error.message)||'HTTP '+res.status); }
 
@@ -2835,11 +3048,24 @@ const systemMsg = [
         if (d === '[DONE]') break;
         try {
           const p = JSON.parse(d);
-          const delta = p.choices?.[0]?.delta?.content || '';
+          const dl = p.choices?.[0]?.delta || {};
+          const reasoningDelta = thinkingEnabled ? (dl.reasoning_content || dl.reasoning || '') : '';
+          const delta = dl.content || '';
+          if (reasoningDelta) {
+            if (first) { aiContent.innerHTML = ''; streamUpdate = makeStreamingRenderer(aiContent, ac.signal); first = false; }
+            reasoningBuf += reasoningDelta;
+            full = composeFull(); streamUpdate(full);
+            if (activeStream) activeStream.full = full;
+            saveDraftThrottled(false);
+            if (aiContent.isConnected) forceScrollBottom();
+          }
           if (delta) {
             if (first) { aiContent.innerHTML = ''; streamUpdate = makeStreamingRenderer(aiContent, ac.signal); first = false; }
-            full += delta; streamUpdate(full);
+            if (reasoningBuf && !reasoningClosed) reasoningClosed = true;
+            contentBuf += delta;
+            full = composeFull(); streamUpdate(full);
             if (activeStream) activeStream.full = full;
+            saveDraftThrottled(false);
             if (aiContent.isConnected) forceScrollBottom();
           }
           if (p.usage) { sess.tokens = (sess.tokens||0) + (p.usage.total_tokens||0); $tokenInfo.textContent = '~' + sess.tokens + ' tok'; }
@@ -2850,25 +3076,31 @@ const systemMsg = [
     if (err.name === 'AbortError') {
       if (full) {
         if (!streamUpdate) { aiContent.innerHTML = ''; renderMDFull(full, aiContent); }
-        sess.messages.push({ role:'assistant', content:full }); sess.ts = Date.now(); saveSessions();
+        sess.messages[draftIdx] = { role:'assistant', content:full };
+        sess.ts = Date.now(); saveSessions();
       } else {
         aiContent.innerHTML = '<span style="color:#999;font-size:13px;font-style:italic">Dihentikan</span>';
-        sess.messages.pop();
+        sess.messages.splice(draftIdx, 1); saveSessions();
       }
       if (activeStream && activeStream.sessionId === activeId) activeStream = null;
-      isStreaming = false; abortController = null; setSendLoading(false);
+      isStreaming = false; abortController = null; setSendLoading(false); activeDraftFlush = null;
       $scrollBtn.classList.remove('show'); $input.blur();
       return;
     }
 
     aiContent.innerHTML = '<span style="color:#ef4444">Error: ' + escHtml(err.message) + '</span>';
-    sess.messages.pop(); toast('Error: ' + err.message, 3500);
+    sess.messages.splice(draftIdx, 1); saveSessions(); toast('Error: ' + err.message, 3500);
     if (activeStream && activeStream.sessionId === activeId) activeStream = null;
-    isStreaming = false; abortController = null; setSendLoading(false);
+    isStreaming = false; abortController = null; setSendLoading(false); activeDraftFlush = null;
     $scrollBtn.classList.remove('show'); $input.blur();
     return;
   }
 
+  if (reasoningBuf && !reasoningClosed) {
+    reasoningClosed = true; full = composeFull();
+    if (activeStream) activeStream.full = full;
+    if (streamUpdate) streamUpdate(full);
+  }
   const wasStopped = streamUpdate ? await streamUpdate.waitUntilDone(ac.signal) : false;
   if (!wasStopped) {
     aiContent.innerHTML = '';
@@ -2890,7 +3122,7 @@ const systemMsg = [
 
   if (activeStream && activeStream.sessionId === activeId) activeStream = null;
   if (aiContent.isConnected) { forceScrollBottom(); $scrollBtn.classList.remove('show'); }
-  sess.messages.push({ role:'assistant', content:full }); sess.ts = Date.now();
+  sess.messages[draftIdx] = { role:'assistant', content:full }; sess.ts = Date.now();
 
   const isFirstExchange = sess.messages.length === 2;
   if (isFirstExchange) {
@@ -2904,7 +3136,7 @@ const systemMsg = [
     });
   } else { saveSessions(); renderHistList(); }
 
-  isStreaming = false; abortController = null; setSendLoading(false);
+  isStreaming = false; abortController = null; setSendLoading(false); activeDraftFlush = null;
   $scrollBtn.classList.remove('show'); $input.blur();
 }
 

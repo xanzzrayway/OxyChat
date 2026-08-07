@@ -290,18 +290,13 @@
     <button class="modal-btn" onclick="closeModal()">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <span class="modal-title" id="modal-title-text">Code</span>
-    <div id="modal-view-tabs">
-      <button class="modal-tab active" id="tab-code" onclick="switchTab('code')">Kode</button>
-      <button class="modal-tab" id="tab-preview" onclick="switchTab('preview')">Preview</button>
-    </div>
     <div id="modal-menu-wrap">
       <button class="modal-btn" onclick="toggleModalMenu()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="13" r="1.2" fill="currentColor"/></svg>
       </button>
       <div id="modal-menu-dd">
         <div class="modal-menu-item" onclick="modalCopyCode()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="8" height="8" rx="1.5"/><path d="M2 10V2h8"/></svg>Copy</div>
-        <div class="modal-menu-item" onclick="switchTab('preview');closeModalMenu()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="12" height="10" rx="1.5"/><path d="M1 5h12"/></svg>Preview</div>
+        <div class="modal-menu-item" id="modal-view-toggle-item" onclick="toggleModalView()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="12" height="10" rx="1.5"/><path d="M1 5h12"/></svg><span id="modal-view-toggle-label">Preview</span></div>
         <div class="modal-menu-item" onclick="modalDownloadCode()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 2v7M4 6l3 3 3-3"/><path d="M2 11h10"/></svg>Download</div>
       </div>
     </div>

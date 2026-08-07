@@ -461,9 +461,20 @@
   .code-block-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface2); border-bottom: 1px solid var(--border); }
   .code-block-lang { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: var(--text-dim); text-transform: lowercase; letter-spacing: 0.02em; }
   .code-block-actions { display: flex; align-items: center; gap: 6px; }
-  .code-block-btn { display: flex; align-items: center; gap: 5px; background: var(--white); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-family: var(--font-main); font-size: 11px; font-weight: 500; color: var(--text-dim); cursor: pointer; transition: all 0.12s; }
-  .code-block-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
-  .code-block-btn svg { width: 12px; height: 12px; }
+  .code-block-btn { display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 6px; width: 26px; height: 26px; padding: 0; color: var(--text-dim); cursor: pointer; transition: all 0.12s; }
+  .code-block-btn:hover { background: var(--surface2); color: var(--text); }
+  .code-block-btn:active { transform: scale(0.92); }
+  .code-block-btn svg { width: 16px; height: 16px; }
+  .code-block-btn-play svg { width: 16px; height: 16px; }
+
+  .msg-action-bar { display: flex; align-items: center; gap: 2px; margin-top: 8px; }
+  .msg-action-btn { display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 6px; width: 28px; height: 28px; padding: 0; color: var(--text-dim); cursor: pointer; transition: all 0.12s; }
+  .msg-action-btn svg { width: 16px; height: 16px; }
+  .msg-action-btn:hover { background: var(--surface2); color: var(--text); }
+  .msg-action-btn:active { transform: scale(0.9); }
+  .msg-action-btn.active { color: var(--accent); }
+  .msg-action-btn.speaking { color: var(--accent); }
+  .code-block-lang { max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .code-block-body {
     overflow-x: auto; overflow-y: auto;
     max-height: calc(12.5px * 1.7 * 15 + 28px);
@@ -872,7 +883,7 @@
   .modal-btn { width: 36px; height: 36px; background: none; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-dim); transition: background 0.12s; flex-shrink: 0; }
   .modal-btn:hover { background: var(--surface2); color: var(--text); }
   .modal-title { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #modal-menu-wrap { position: relative; flex-shrink: 0; }
+  #modal-menu-wrap { position: relative; flex-shrink: 0; margin-left: auto; }
   #modal-menu-dd { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: var(--white); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); width: 160px; z-index: 210; padding: 4px 0; overflow: hidden; animation: ctxIn 0.12s cubic-bezier(.34,1.3,.64,1); transform-origin: top right; }
   #modal-menu-dd.open { display: block; }
   .modal-menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; color: var(--text-dim); cursor: pointer; transition: background 0.1s; }
