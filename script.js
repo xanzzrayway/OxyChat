@@ -493,7 +493,7 @@ function updateChatModeTabsUI() {
   });
   document.body.classList.toggle('mode-multi', chatMode === 'multi');
   const inputEl = document.getElementById('input');
-  if (inputEl) inputEl.placeholder = chatMode === 'multi' ? 'Tanya 4 model sekaligus...' : 'Tanya Oxy AI...';
+  if (inputEl) inputEl.placeholder = chatMode === 'multi' ? 'Tanya 4 model sekaligus...' : 'Tanya Qwerty...';
   updatePillForMode();
   renderMultiChips();
 }
@@ -835,7 +835,7 @@ function deactivateImageGenMode() {
   imageGenModeActive = false;
   const chip = document.getElementById('image-mode-chip');
   if (chip) chip.remove();
-  $input.placeholder = 'Tanya Oxy AI...';
+  $input.placeholder = 'Tanya Qwerty...';
 }
 
 function readFileAsBase64(file) {
@@ -906,7 +906,7 @@ function onWebSearchToggle(el) {
   toast(webSearchEnabled ? 'Pencarian web aktif' : 'Pencarian web nonaktif');
 }
 
-const WELCOME_WORDS = ['Oxy AI', 'Asisten Pintarmu', 'Siap Membantu', 'Cepat & Cerdas', 'Mulai Ngobrol'];
+const WELCOME_WORDS = ['Qwerty', 'Asisten Pintarmu', 'Siap Membantu', 'Cepat & Cerdas', 'Mulai Ngobrol'];
 let welcomeTypeTimer = null;
 function startWelcomeTypewriter() {
   const el = document.getElementById('welcome-type-text');
@@ -2187,10 +2187,10 @@ function showEmptyState() {
     return;
   }
   es.id = 'empty-state';
-  es.innerHTML = '<div class="es-title">Oxy AI</div><div class="es-grid">'
+  es.innerHTML = '<div class="es-title">Qwerty</div><div class="es-grid">'
     + '<button class="es-pill" onclick="fillPrompt(\'Buat HTML yang Bagus Dan Keren\')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1.8 1.5h9.4l-.9 9.3-3.8 1.4-3.8-1.4-.9-9.3z"/><path d="M4.6 5L3.5 6.5L4.6 8M8.4 5L9.5 6.5L8.4 8"/></svg>Buat HTML</button>'
     + '<button class="es-pill" onclick="fillPrompt(\'Ajari saya coding dari dasar, mulai dari mana?\')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2.6C5.2 1.6 3.2 1.4 1.5 1.9v8.4c1.7-.5 3.7-.3 5 .7 1.3-1 3.3-1.2 5-.7V1.9c-1.7-.5-3.7-.3-5 .7z"/><path d="M6.5 2.6v8.4"/></svg>Belajar Coding</button>'
-    + '<button class="es-pill" onclick="fillPrompt(\'Oxy AI itu apa dan bisa bantu apa saja?\')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6.5" cy="6.5" r="5"/><path d="M6.5 5.5v4M6.5 4h.01"/></svg>Tentang Oxy</button>'
+    + '<button class="es-pill" onclick="fillPrompt(\'Qwerty itu apa dan bisa bantu apa saja?\')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6.5" cy="6.5" r="5"/><path d="M6.5 5.5v4M6.5 4h.01"/></svg>Tentang Qwerty</button>'
     + '<button class="es-pill" onclick="fillPrompt(\'Buat script Python Yang Keren\')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10.5C2 10.5 2 6.8 5 6.8C8 6.8 8 3.2 11 3.2"/><circle cx="11" cy="3.2" r="1" fill="currentColor" stroke="none"/></svg>Buat Python</button>'
     + '</div>'
     + '<button class="es-pill es-pill-image" onclick="activateImageGenMode()"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="10" height="9" rx="1.3"/><circle cx="4.5" cy="5" r="1"/><path d="M1.8 8.8l2.5-2.6 2 2 2.4-2.9 2.3 2.9"/></svg>Generate Image</button>';
@@ -2727,7 +2727,7 @@ async function sendMulti(text) {
 
   const systemMsg = [{
     role: 'system',
-    content: 'Kamu adalah Oxy AI, asisten yang dibuat oleh Abid. Jawab pertanyaan pengguna dengan jelas, singkat, padat, dan akurat.' +
+    content: 'Kamu adalah Qwerty, asisten yang dibuat oleh Abid. Akun TikTok pembuat lu adalah @BidzQwerty. Jawab pertanyaan pengguna dengan jelas, singkat, padat, dan akurat.' +
       ' WAJIB pake bahasa gaul Indonesia yang santai dan kekinian, JANGAN PERNAH pake bahasa formal atau baku. Contoh yang wajib lu pake:' +
       ' Saya = Gw/Gue, Enggak = Gak/Ga, Kamu = Lu/Lo, Ini = Ni, Itu = Tuh, Bentar = Tar/Santai, Baik = Oke/Sip, Bagus = Keren/Mantep, ' +
       ' Sangat = Banget/Bgt, Sekarang = Skrg, Nanti = Tar, Sudah = Udah, Belum = Blom, Tidak Bisa = Gabisa, ' +
@@ -2970,7 +2970,7 @@ async function send() {
 const systemMsg = [
   {
     role: 'system',
-    content: 'Kamu adalah Oxy AI, asisten serba bisa yang dibuat oleh Abid. Lu bisa diajak ngobrol dan bantu apa aja, mulai dari obrolan santai, curhat, nanya info, sampe hal teknis. Salah satu keahlian lu yang paling jago adalah coding tingkat lanjut, tapi itu BUKAN satu-satunya topik yang lu kuasai.' +
+    content: 'Kamu adalah Qwerty, asisten serba bisa yang dibuat oleh Abid. Akun TikTok pembuat lu adalah @BidzQwerty. Lu bisa diajak ngobrol dan bantu apa aja, mulai dari obrolan santai, curhat, nanya info, sampe hal teknis. Salah satu keahlian lu yang paling jago adalah coding tingkat lanjut, tapi itu BUKAN satu-satunya topik yang lu kuasai.' +
       ' PENTING BANGET: jawab SESUAI topik yang user tanya/omongin. Kalo user ngobrol hal yang gak nyambung sama koding (misal curhat, nanya info umum, ngobrol santai, dll), JANGAN alihin ke topik koding, jangan tiba-tiba nyaranin ngoding atau nyinggung-nyinggung soal kode kalo emang gak diminta. Ikutin arah obrolan user, jangan maksain topik lu sendiri.' +
       (userName ? ' Nama pengguna adalah "' + userName + '". Panggil pengguna dengan nama itu sesekali secara natural, jangan berlebihan.' : '') +
       ' PENTING: JANGAN PERNAH pake kata "bro", "cuy", "bang", atau "gan" dalam balasan apapun, gak peduli situasinya gimana. Panggil user dengan nama dia kalo ada, atau gak usah pake panggilan sama sekali.' +
