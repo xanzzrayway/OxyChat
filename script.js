@@ -1,6 +1,52 @@
 // GANTI ini dengan URL server lo (dari cloudflared tunnel di Termux)
-const SERVER_URL = 'https://server.qwertychat.my.id';
+const SERVER_URL = 'https://server.qwertychat.my.id/';
 localStorage.setItem('oxychat_server_url_v1', SERVER_URL);
+
+// ==== Anti-Jailbreak: device id + ban permanen dari server ====
+// Device id dikirim di tiap request biar server bisa nge-ban perangkat spesifik,
+// bukan cuma nge-ban IP (yang bisa gampang ganti/gonta-ganti jaringan).
+const LS_DEVICE_ID = 'oxychat_device_id_v1';
+const LS_BANNED = 'oxychat_banned_v1';
+
+function getDeviceId() {
+  let id = localStorage.getItem(LS_DEVICE_ID);
+  if (!id) {
+    id = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 12);
+    localStorage.setItem(LS_DEVICE_ID, id);
+  }
+  return id;
+}
+
+// Nampilin overlay ban full-screen yang gak bisa ditutup user.
+// Ini dipanggil (a) begitu app dibuka kalau device ini udah pernah kena ban sebelumnya,
+// atau (b) begitu server balikin sinyal banned:true di request manapun.
+function showJailbreakBan(reason) {
+  try {
+    localStorage.setItem(LS_BANNED, JSON.stringify({ banned: true, reason: reason || 'Kami Telah Mendeteksi Jailbreak', ts: Date.now() }));
+  } catch (e) {}
+  document.documentElement.style.overflow = 'hidden';
+  const boot = () => {
+    document.body.classList.add('jb-banned');
+    const overlay = document.getElementById('jailbreak-ban-overlay');
+    const reasonEl = document.getElementById('jb-ban-reason');
+    if (reasonEl) reasonEl.textContent = reason || 'Kami Telah Mendeteksi Jailbreak';
+    if (overlay) overlay.classList.add('show');
+    const app = document.getElementById('app');
+    if (app) app.style.display = 'none';
+  };
+  if (document.body) boot();
+  else document.addEventListener('DOMContentLoaded', boot);
+}
+
+// Cek paling awal (sebelum apapun di-render) apakah device ini udah kena ban permanen.
+(function checkExistingBan() {
+  try {
+    const raw = localStorage.getItem(LS_BANNED);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data && data.banned) showJailbreakBan(data.reason);
+  } catch (e) {}
+})();
 
 // Model-model ini dipanggil lewat provider NVIDIA, sisanya default ke Groq.
 // Routing API key & base URL sekarang ditangani di server, bukan di sini.
@@ -32,17 +78,35 @@ function getProviderName(modelValue) {
   return 'groq';
 }
 async function callOxyAPI(modelValue, body, extraOpts = {}) {
+  // Kalau device ini udah kena ban permanen, jangan kirim request apapun lagi ke server.
+  try {
+    const raw = localStorage.getItem(LS_BANNED);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && d.banned) { showJailbreakBan(d.reason); throw new Error('DEVICE_BANNED'); }
+    }
+  } catch (e) { if (e && e.message === 'DEVICE_BANNED') throw e; }
+
   try {
     const res = await fetch(SERVER_URL + '/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Device-Id': getDeviceId() },
       body: JSON.stringify({ provider: getProviderName(modelValue), ...body }),
       ...extraOpts
     });
     if (typeof document !== 'undefined') document.getElementById('server-down-banner')?.classList.remove('show');
+
+    // Server ngedeteksi jailbreak / device lagi banned -> langsung tampilin popup permanen.
+    if (res.status === 403) {
+      let payload = null;
+      try { payload = await res.clone().json(); } catch (e) {}
+      if (payload && payload.banned) {
+        showJailbreakBan(payload.reason || 'Kami Telah Mendeteksi Jailbreak');
+      }
+    }
     return res;
   } catch (err) {
-    if (err.name !== 'AbortError' && typeof document !== 'undefined') {
+    if (err.name !== 'AbortError' && err.message !== 'DEVICE_BANNED' && typeof document !== 'undefined') {
       document.getElementById('server-down-banner')?.classList.add('show');
     }
     throw err;

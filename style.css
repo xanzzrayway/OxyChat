@@ -1474,3 +1474,40 @@
   .personalize-avatar-img, .sidebar-account-avatar-img {
     width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;
   }
+
+/* ==== Jailbreak Ban Overlay (permanen, gak bisa ditutup) ==== */
+#jailbreak-ban-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 999999;
+  background: #0a0a0a;
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+#jailbreak-ban-overlay.show { display: flex; }
+.jb-ban-box {
+  max-width: 420px; width: 100%;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.jb-ban-icon {
+  width: 88px; height: 88px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,59,48,0.12);
+  color: #ff453a;
+  margin-bottom: 6px;
+}
+.jb-ban-title {
+  font-family: var(--font-main); font-size: 22px; font-weight: 700;
+  color: #ffffff; letter-spacing: -0.02em;
+}
+.jb-ban-reason {
+  font-family: var(--font-main); font-size: 15px; font-weight: 600;
+  color: #ff453a; background: rgba(255,59,48,0.1);
+  border: 1px solid rgba(255,59,48,0.3);
+  padding: 8px 16px; border-radius: 10px;
+}
+.jb-ban-sub {
+  font-family: var(--font-main); font-size: 13.5px; line-height: 1.6;
+  color: #8a8a8e;
+}
+body.jb-banned { overflow: hidden; }
