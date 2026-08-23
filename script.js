@@ -1,5 +1,5 @@
 // GANTI ini dengan URL server lo (dari cloudflared tunnel di Termux)
-const SERVER_URL = 'https://server.qwertychat.my.id';
+const SERVER_URL = 'https://server.qwertychat.my.id/';
 localStorage.setItem('oxychat_server_url_v1', SERVER_URL);
 
 // ==== Anti-Jailbreak: device id + ban permanen dari server ====
@@ -117,7 +117,9 @@ async function callOxyAPI(modelValue, body, extraOpts = {}) {
   } catch (e) { if (e && e.message === 'DEVICE_BANNED') throw e; }
 
   try {
-    const res = await fetch(SERVER_URL + '/api/chat', {
+    // SERVER_URL.replace(...) buang trailing slash biar gak jadi dobel slash pas digabung '/api/chat'
+    // (dobel slash bikin path yang diterima server jadi "//api/chat", gak match sama guard anti-jailbreak)
+    const res = await fetch(SERVER_URL.replace(/\/+$/, '') + '/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Device-Id': getDeviceId() },
       body: JSON.stringify({ provider: getProviderName(modelValue), ...body }),
