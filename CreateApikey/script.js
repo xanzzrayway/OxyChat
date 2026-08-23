@@ -1,5 +1,7 @@
 // Ambil SERVER_URL yang disimpen sama halaman utama OxyChat (localStorage, satu domain)
-const SERVER_URL = localStorage.getItem('oxychat_server_url_v1') || '';
+// .replace buang trailing slash biar gak jadi dobel slash pas digabung '/api/keys' dkk
+// (dobel slash bikin server balikin 404/HTML, bukan JSON -> "Unexpected token '<'")
+const SERVER_URL = (localStorage.getItem('oxychat_server_url_v1') || '').replace(/\/+$/, '');
 
 // Katalog model publik yang bisa dipilih pas bikin API key (harus sinkron sama server.js)
 const APIKEY_MODEL_CATALOG = [
