@@ -1479,15 +1479,24 @@
 #jailbreak-ban-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 999999;
-  background: #0a0a0a;
+  background: rgba(8,8,10,0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   align-items: center; justify-content: center;
   padding: 24px;
+  /* pastiin apapun yang ada di belakang overlay ini gak bisa diklik/disentuh sama sekali */
+  pointer-events: all;
 }
 #jailbreak-ban-overlay.show { display: flex; }
 .jb-ban-box {
   max-width: 420px; width: 100%;
   text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: 14px;
+  background: rgba(28,28,30,0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 36px 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
 .jb-ban-icon {
   width: 88px; height: 88px; border-radius: 50%;
