@@ -1,5 +1,5 @@
 // GANTI ini dengan URL server lo (dari cloudflared tunnel di Termux)
-const SERVER_URL = 'https://winds-tar-mlb-recognised.trycloudflare.com';
+const SERVER_URL = 'https://server.qwertychat.my.id/';
 localStorage.setItem('oxychat_server_url_v1', SERVER_URL);
 
 // Model-model ini dipanggil lewat provider NVIDIA, sisanya default ke Groq.
@@ -185,7 +185,7 @@ function applyPlan(p) {
 // Format plan penuh:      'KODENYA': { plan: 'pro' } atau { plan: 'maks' }
 // Format buka model sementara: 'KODENYA': { unlockModel: 'spectrax', hours: 24 }
 const REDEEM_CODES = {
-  'MAXBUNDLE2026': { plan: 'maks' },
+  'SPECTRAX2026PRO': { unlockModel: 'spectrax', hours: 24 },
 };
 function getSpectraxUnlockUntil() {
   const v = parseInt(localStorage.getItem(scopedKey(LS_SPECTRAX_UNLOCK)) || '0', 10);
