@@ -48,6 +48,35 @@ function showJailbreakBan(reason) {
   } catch (e) {}
 })();
 
+// ==== Auto-update checker ====
+// Biar user gak perlu manual hapus data browser tiap ada update.
+// APP_VERSION di sini HARUS sama dengan isi version.json — begitu kamu deploy versi baru,
+// update angka ini + isi version.json (bisa pake timestamp, format bebas asal beda tiap deploy).
+const APP_VERSION = '20260823112950';
+function checkForAppUpdate() {
+  fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (data && data.version && data.version !== APP_VERSION) showUpdateToast();
+    })
+    .catch(() => {});
+}
+function showUpdateToast() {
+  if (document.getElementById('app-update-toast')) return;
+  const boot = () => {
+    const el = document.createElement('div');
+    el.id = 'app-update-toast';
+    el.innerHTML = 'Ada update baru <button id="app-update-refresh-btn" type="button">Refresh</button>';
+    document.body.appendChild(el);
+    document.getElementById('app-update-refresh-btn').onclick = () => location.reload();
+  };
+  if (document.body) boot();
+  else document.addEventListener('DOMContentLoaded', boot);
+}
+checkForAppUpdate();
+setInterval(checkForAppUpdate, 5 * 60 * 1000); // cek ulang tiap 5 menit
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForAppUpdate(); });
+
 // Model-model ini dipanggil lewat provider NVIDIA, sisanya default ke Groq.
 // Routing API key & base URL sekarang ditangani di server, bukan di sini.
 const NVIDIA_MODELS = [
