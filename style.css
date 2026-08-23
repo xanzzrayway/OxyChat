@@ -1479,6 +1479,9 @@
 #jailbreak-ban-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 999999;
+  /* reset zoom di sini biar position:fixed gak keganggu sama html{zoom:var(--ui-zoom)}
+     (zoom di ancestor bikin fixed positioning meleset/nyangkut di atas di banyak browser) */
+  zoom: 1;
   background: rgba(8,8,10,0.72);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
