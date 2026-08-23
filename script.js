@@ -1,5 +1,5 @@
 // GANTI ini dengan URL server lo (dari cloudflared tunnel di Termux)
-const SERVER_URL = 'https://server.qwertychat.my.id/';
+const SERVER_URL = 'https://server.qwertychat.my.id';
 localStorage.setItem('oxychat_server_url_v1', SERVER_URL);
 
 // ==== Anti-Jailbreak: device id + ban permanen dari server ====
