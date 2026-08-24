@@ -48,7 +48,7 @@ function submitRedeemCode() {
   if (entry.unlockModel) {
     const m = getAllModels().find(x => x.value === entry.unlockModel);
     const until = Date.now() + (entry.hours || 24) * 3600000;
-    localStorage.setItem(scopedKey(LS_SPECTRAX_UNLOCK), String(until));
+    localStorage.setItem(scopedKey(LS_MODEL_UNLOCK_PREFIX + entry.unlockModel), String(until));
     buildModelDD();
     toast('Berhasil! ' + (m ? m.label : 'Model') + ' kebuka selama ' + (entry.hours || 24) + ' jam');
     closeRedeemModal();
@@ -242,6 +242,7 @@ function saveCustomInstr() {
 // ==== Api Key OxyChat ====
 // Katalog model publik yang bisa dipilih pas bikin API key (harus sinkron sama server)
 const APIKEY_MODEL_CATALOG = [
+  { id: 'oxy-alpha', label: 'Ox Alpha' },
   { id: 'spectrax', label: 'Spectrax' },
   { id: 'vaneus-4.0', label: 'Vaneus 4.0' },
   { id: 'oxy-nemotron', label: 'Oxy Nemotron' },

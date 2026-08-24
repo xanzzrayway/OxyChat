@@ -64,8 +64,13 @@ const PERPLEXITY_MODELS = [
   'sonar',
   'sonar-deep-research',
 ];
+// Model-model ini dipanggil lewat provider OpenRouter
+const OPENROUTER_MODELS = [
+  'stealth/ox-alpha', // Ox Alpha
+];
 function getProviderName(modelValue) {
   if (SPECTRAX_MODELS.includes(modelValue)) return 'spectrax';
+  if (OPENROUTER_MODELS.includes(modelValue)) return 'openrouter';
   if (NVIDIA_MODELS.includes(modelValue)) return 'nvidia';
   if (MISTRAL_MODELS.includes(modelValue)) return 'mistral';
   if (PERPLEXITY_MODELS.includes(modelValue)) return 'perplexity';
@@ -110,7 +115,7 @@ const LS_GOOGLE_PICTURE = 'oxychat_google_picture_v1';
 const LS_IS_TRIAL = 'oxychat_is_trial_v1';
 const LS_PLAN = 'oxychat_plan_v1';
 const LS_PLAN_CHOSEN = 'oxychat_plan_chosen_v1';
-const LS_SPECTRAX_UNLOCK = 'oxychat_spectrax_unlock_until_v1';
+const LS_MODEL_UNLOCK_PREFIX = 'oxychat_model_unlock_v1__';
 
 // ==== Penanda akun (biar tiap akun Google beda storage & riwayat chat) ====
 // accountKey() balikin id unik per akun: 'g_<email>' buat akun Google, 'trial' buat mode uji coba,
@@ -224,18 +229,22 @@ function applyPlan(p) {
 }
 // Kode redeem: isi manual di sini nanti.
 // Format plan penuh:      'KODENYA': { plan: 'pro' } atau { plan: 'maks' }
-// Format buka model sementara: 'KODENYA': { unlockModel: 'spectrax', hours: 24 }
+// Format buka model sementara: 'KODENYA': { unlockModel: 'nama-value-model', hours: 24 }
 const REDEEM_CODES = {
   'SPECTRAX2026PRO': { unlockModel: 'spectrax', hours: 24 },
+  'OXALPHA517R': { unlockModel: 'stealth/ox-alpha', hours: 24 },
 };
-function getSpectraxUnlockUntil() {
-  const v = parseInt(localStorage.getItem(scopedKey(LS_SPECTRAX_UNLOCK)) || '0', 10);
+// Sistem unlock generik per-model (gantiin yang dulu cuma khusus Spectrax) —
+// tiap model punya key localStorage sendiri, jadi kode redeem apapun bisa buka model manapun.
+function getModelUnlockUntil(modelValue) {
+  const v = parseInt(localStorage.getItem(scopedKey(LS_MODEL_UNLOCK_PREFIX + modelValue)) || '0', 10);
   return isNaN(v) ? 0 : v;
 }
-function isSpectraxUnlocked() { return Date.now() < getSpectraxUnlockUntil(); }
+function isModelUnlocked(modelValue) { return Date.now() < getModelUnlockUntil(modelValue); }
 
 const MODELS = [
   { group:'Model', items:[
+    { label:'Ox Alpha', value:'stealth/ox-alpha', pro:true, icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2.3" fill="currentColor" stroke="none"/></svg>' },
     { label:'Spectrax', value:'spectrax', pro:true, icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2 12.5h12L8 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 1.5v11M4.7 7h6.6M3.3 9.7h9.4" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" opacity="0.55"/></svg>' },
     { label:'Vaneus 4.0', value:'vaneus-4.0', pro:true, icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l6-2.5L14 4v5c0 3-2.5 5.5-6 6.5-3.5-1-6-3.5-6-6.5V4z"/><path d="M6 8l1.5 1.5L11 6"/></svg>' },
     { label:'Oxy Nemotron', value:'nvidia/llama-3.3-nemotron-super-49b-v1.5', icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 5l6 6M11 5l-6 6"/></svg>' },

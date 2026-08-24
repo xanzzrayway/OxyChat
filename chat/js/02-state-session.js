@@ -15,6 +15,7 @@ function getAllModels() {
   return list;
 }
 const MODEL_COLORS = {
+  'stealth/ox-alpha': '#6366f1',
   'qwen/qwen3.6-27b': '#3b82f6',
   'openai/gpt-oss-120b': '#a855f7',
   'llama-3.3-70b-versatile': '#10b981',
@@ -31,6 +32,7 @@ const MODEL_COLORS = {
   'sonar-deep-research': '#20808d'
 };
 const MODEL_SUBS = {
+  'stealth/ox-alpha': 'OpenRouter · Alpha',
   'qwen/qwen3.6-27b': 'Reasoning · Deep',
   'openai/gpt-oss-120b': 'Model · 120B',
   'llama-3.3-70b-versatile': 'Meta · 70B',
@@ -51,6 +53,7 @@ function getModelSub(value) { return MODEL_SUBS[value] || ''; }
 
 // Kode singkat tiap model buat UI pilih model baru
 const MODEL_CODE = {
+  'stealth/ox-alpha': 'Alpha',
   'qwen/qwen3.6-27b': 'R3.5',
   'openai/gpt-oss-120b': 'X2.5',
   'llama-3.3-70b-versatile': 'X2.0',
@@ -69,7 +72,8 @@ const MODEL_CODE = {
 function getModelCode(value) { return MODEL_CODE[value] || ''; }
 // Model utama yang tampil di halaman awal sheet
 const MAIN_MODEL_VALUES = [
-  'spectrax', // Spectrax, paling atas
+  'stealth/ox-alpha', // Ox Alpha, paling atas
+  'spectrax', // Spectrax, di bawah Ox Alpha
   'vaneus-4.0',                                    // Vaneus 4.0, di bawah Spectrax
   'nvidia/llama-3.3-nemotron-super-49b-v1.5',       // Oxy Nemotron, dipisah dari Spectrax
   'sonar-reasoning-pro',                            // Oxy Sonar Reasoning, di bawah Oxy Nemotron
@@ -352,7 +356,7 @@ if (savedModelVal) {
   }
 }
 // Kalau model default/tersimpan itu PRO tapi user masih FREE (dan gak lagi punya unlock sementara), turunin ke model gratis pertama
-if (selectedModel.pro && currentPlan === 'gratis' && !(selectedModel.value === 'spectrax' && isSpectraxUnlocked())) {
+if (selectedModel.pro && currentPlan === 'gratis' && !isModelUnlocked(selectedModel.value)) {
   const freeModel = getAllModels().find(m => !m.pro);
   if (freeModel) selectedModel = freeModel;
 }

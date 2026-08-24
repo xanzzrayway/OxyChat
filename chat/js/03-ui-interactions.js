@@ -66,13 +66,13 @@ function modelCardHTML(value, small) {
   const m = getAllModels().find(x => x.value === value);
   if (!m) return '';
   const sel = selectedModel.value === value;
-  const spectraxUnlocked = value === 'spectrax' && isSpectraxUnlocked();
-  const locked = m.pro && currentPlan === 'gratis' && !spectraxUnlocked;
+  const modelUnlocked = isModelUnlocked(value);
+  const locked = m.pro && currentPlan === 'gratis' && !modelUnlocked;
   return '<div class="model-card' + (small ? ' model-card-sm' : '') + (sel ? ' selected' : '') + (locked ? ' locked' : '') + '" onclick="selectModelFromSheet(\'' + value + '\')">'
     + '<div class="model-card-icon" style="color:' + getModelColor(value) + '">' + (m.icon || '') + '</div>'
     + '<div class="model-card-text"><div class="model-card-code">' + escHtml(getModelCode(value)) + '</div></div>'
-    + (m.pro && !spectraxUnlocked ? '<span class="model-card-pro-badge">PRO</span>' : '')
-    + (spectraxUnlocked ? '<span class="model-card-unlock-badge">24 JAM</span>' : '')
+    + (m.pro && !modelUnlocked ? '<span class="model-card-pro-badge">PRO</span>' : '')
+    + (modelUnlocked ? '<span class="model-card-unlock-badge">24 JAM</span>' : '')
     + (sel ? '<span class="model-card-check"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.3 3.3L13 5"/></svg></span>' : '')
     + '</div>';
 }
@@ -83,8 +83,8 @@ function buildModelDD() {
 function selectModelFromSheet(value) {
   const m = getAllModels().find(x => x.value === value);
   if (!m) return;
-  const spectraxUnlocked = value === 'spectrax' && isSpectraxUnlocked();
-  if (m.pro && currentPlan === 'gratis' && !spectraxUnlocked) {
+  const modelUnlocked = isModelUnlocked(value);
+  if (m.pro && currentPlan === 'gratis' && !modelUnlocked) {
     toast('Model ' + m.label + ' cuma buat Paket Pro/Maks. Redeem code atau upgrade dulu ya');
     return;
   }

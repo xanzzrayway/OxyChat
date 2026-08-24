@@ -85,7 +85,7 @@ function reloadAccountScopedState() {
   } catch (e) { sessions = {}; }
   activeId = resolveActiveId();
   currentPlan = localStorage.getItem(scopedKey(LS_PLAN)) || 'gratis';
-  if (selectedModel.pro && currentPlan === 'gratis' && !(selectedModel.value === 'spectrax' && isSpectraxUnlocked())) {
+  if (selectedModel.pro && currentPlan === 'gratis' && !isModelUnlocked(selectedModel.value)) {
     const freeModel = getAllModels().find(m => !m.pro);
     if (freeModel) { selectedModel = freeModel; localStorage.setItem(LS_MODEL, freeModel.value); setPillModel(freeModel); }
   }
