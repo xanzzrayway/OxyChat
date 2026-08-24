@@ -17,25 +17,49 @@ function getDeviceId() {
   return id;
 }
 
-// Nampilin overlay ban full-screen yang gak bisa ditutup user.
-// Ini dipanggil (a) begitu app dibuka kalau device ini udah pernah kena ban sebelumnya,
-// atau (b) begitu server balikin sinyal banned:true di request manapun.
+// Nampilin overlay ban (gak bisa ditutup) — chat & kirim pesan diblokir,
+// tapi sidebar/menu/hamburger tetep bisa dipake (liat CSS #jailbreak-ban-overlay).
 function showJailbreakBan(reason) {
   try {
     localStorage.setItem(LS_BANNED, JSON.stringify({ banned: true, reason: reason || 'Kami Telah Mendeteksi Jailbreak', ts: Date.now() }));
   } catch (e) {}
-  document.documentElement.style.overflow = 'hidden';
   const boot = () => {
-    document.body.classList.add('jb-banned');
     const overlay = document.getElementById('jailbreak-ban-overlay');
     const reasonEl = document.getElementById('jb-ban-reason');
     if (reasonEl) reasonEl.textContent = reason || 'Kami Telah Mendeteksi Jailbreak';
     if (overlay) overlay.classList.add('show');
-    const app = document.getElementById('app');
-    if (app) app.style.display = 'none';
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send-btn');
+    if (input) { input.disabled = true; input.placeholder = 'Akun diblokir permanen'; }
+    if (sendBtn) sendBtn.disabled = true;
   };
   if (document.body) boot();
   else document.addEventListener('DOMContentLoaded', boot);
+}
+
+// Tombol "Tinjau Akun" di popup ban — ngirim notifikasi permintaan tinjauan
+// ke Admin Panel (bukan mindahin ke halaman lain). Admin yang mutusin pulihin atau nggak.
+async function requestAccountReview() {
+  const btn = document.getElementById('jb-ban-review-btn');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = 'Mengirim...';
+  try {
+    const res = await fetch(SERVER_URL + '/api/account-review-request', {
+      method: 'POST',
+      headers: { 'X-Device-Id': getDeviceId() }
+    });
+    const data = await res.json().catch(() => null);
+    if (data && data.requested) {
+      btn.textContent = 'Permintaan Terkirim ✓';
+    } else {
+      btn.textContent = 'Gagal, coba lagi';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    btn.textContent = 'Gagal, coba lagi';
+    btn.disabled = false;
+  }
 }
 
 // Cek paling awal (sebelum apapun di-render) apakah device ini udah kena ban permanen.

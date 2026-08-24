@@ -1476,53 +1476,63 @@
   }
 
 /* ==== Jailbreak Ban Overlay (permanen, gak bisa ditutup) ==== */
+/* ==== Jailbreak Ban Overlay (permanen, ikut tema) ==== */
+/* Sengaja gak nutup #topbar (top: 52px = tinggi topbar) biar menu/hamburger/sidebar
+   tetep bisa dipencet. Yang diblokir cuma area chat + kotak input (gak bisa kirim pesan). */
 #jailbreak-ban-overlay {
   display: none;
-  position: fixed; inset: 0; z-index: 999999;
-  /* reset zoom di sini biar position:fixed gak keganggu sama html{zoom:var(--ui-zoom)}
-     (zoom di ancestor bikin fixed positioning meleset/nyangkut di atas di banyak browser) */
+  position: fixed; top: 52px; left: 0; right: 0; bottom: 0;
+  z-index: 45; /* di bawah #sidebar (50) & semua modal/dropdown (200+), di atas chat area */
   zoom: 1;
-  background: rgba(8,8,10,0.72);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   align-items: center; justify-content: center;
   padding: 24px;
-  /* pastiin apapun yang ada di belakang overlay ini gak bisa diklik/disentuh sama sekali */
   pointer-events: all;
 }
 #jailbreak-ban-overlay.show { display: flex; }
 .jb-ban-box {
-  max-width: 420px; width: 100%;
+  max-width: 380px; width: 100%;
   text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: 14px;
-  background: rgba(28,28,30,0.9);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--white, var(--surface));
+  border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 36px 28px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  padding: 32px 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.16);
 }
 .jb-ban-icon {
   width: 88px; height: 88px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(255,59,48,0.12);
-  color: #ff453a;
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
   margin-bottom: 6px;
 }
 .jb-ban-title {
   font-family: var(--font-main); font-size: 22px; font-weight: 700;
-  color: #ffffff; letter-spacing: -0.02em;
+  color: var(--text); letter-spacing: -0.02em;
 }
 .jb-ban-reason {
   font-family: var(--font-main); font-size: 15px; font-weight: 600;
-  color: #ff453a; background: rgba(255,59,48,0.1);
-  border: 1px solid rgba(255,59,48,0.3);
+  color: #ef4444; background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
   padding: 8px 16px; border-radius: 10px;
 }
 .jb-ban-sub {
   font-family: var(--font-main); font-size: 13.5px; line-height: 1.6;
-  color: #8a8a8e;
+  color: var(--text-muted);
 }
-body.jb-banned { overflow: hidden; }
+.jb-ban-review-btn {
+  margin-top: 6px;
+  font-family: var(--font-main); font-size: 13.5px; font-weight: 600;
+  color: var(--accent-fg); background: var(--accent);
+  border: none; border-radius: 11px; padding: 11px 20px;
+  cursor: pointer;
+}
+.jb-ban-review-btn:active { opacity: 0.85; }
+.jb-ban-review-btn:disabled { opacity: 0.55; cursor: default; }
 
 /* ==== Toast auto-update ==== */
 #app-update-toast {
