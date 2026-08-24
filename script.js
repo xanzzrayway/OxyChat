@@ -69,12 +69,29 @@ async function verifyBanStatus() {
   } catch (e) {}
 }
 
+// Tombol "Cek Ulang Status" — verifikasi manual ke server, instan, gak perlu nunggu polling.
+async function manualRecheckBan() {
+  const btn = document.getElementById('jb-ban-recheck-btn');
+  if (!btn) return;
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Mengecek...';
+  await verifyBanStatus();
+  // kalau masih ke-ban, overlay-nya masih ada -> tombol ini masih kesentuh, balikin teksnya
+  if (btn.isConnected) { btn.disabled = false; btn.textContent = original; }
+}
+
 let banPollTimer;
 function startBanStatusPolling() {
   if (banPollTimer) return;
-  banPollTimer = setInterval(verifyBanStatus, 15000); // cek ulang tiap 15 detik
+  banPollTimer = setInterval(verifyBanStatus, 4000); // cek ulang tiap 4 detik
 }
 function stopBanStatusPolling() { clearInterval(banPollTimer); banPollTimer = null; }
+
+// Cek ulang instan pas balik buka tab/app-nya lagi — gak perlu nunggu interval.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && banPollTimer) verifyBanStatus();
+});
 
 // Tombol "Tinjau Akun" di popup ban — ngirim notifikasi permintaan tinjauan
 // ke Admin Panel (bukan mindahin ke halaman lain). Admin yang mutusin pulihin atau nggak.
