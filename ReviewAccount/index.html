@@ -1,1 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tinjau Akun - Qwerty</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<button id="back-btn" onclick="goBack()" aria-label="Kembali">
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4l-6 5 6 5"/></svg>
+</button>
+
+<h1>Tinjau Akun</h1>
+<div class="desc">Cek status pemblokiran akun/perangkat ini dan ajukan pemulihan kalau kamu merasa ini keliru.</div>
+
+<div id="status-box">
+  <div id="status-loading">Memeriksa status akun...</div>
+  <div id="status-content" style="display:none;">
+    <div id="status-badge"></div>
+    <div id="status-reason-row" style="display:none;">
+      <span class="status-label">Alasan</span>
+      <span id="status-reason"></span>
+    </div>
+    <div id="status-trigger-row" style="display:none;">
+      <span class="status-label">Terdeteksi dari pesan</span>
+      <span id="status-trigger"></span>
+    </div>
+    <div id="status-time-row" style="display:none;">
+      <span class="status-label">Waktu</span>
+      <span id="status-time"></span>
+    </div>
+  </div>
+</div>
+
+<button id="restore-btn" onclick="restoreAccount()" style="display:none;">Pulihkan Akun</button>
+
+<div id="restored-popup">
+  <div id="restored-box">
+    <div id="restored-icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <div id="restored-title">Akun Di Pulihkan</div>
+    <div id="restored-message" id="restored-message-text">Akun kamu udah aktif lagi dan bisa dipakai chat seperti biasa.</div>
+    <button id="restored-close-btn" onclick="backToChat()">Kembali ke Chat</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
