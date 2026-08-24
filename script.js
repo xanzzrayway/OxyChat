@@ -48,8 +48,6 @@ function clearJailbreakBan() {
   const sendBtn = document.getElementById('send-btn');
   if (input) { input.disabled = false; input.placeholder = 'Tanya Qwerty...'; }
   if (sendBtn) sendBtn.disabled = false;
-  const reviewBtn = document.getElementById('jb-ban-review-btn');
-  if (reviewBtn) { reviewBtn.disabled = false; reviewBtn.textContent = 'Tinjau Akun'; }
 }
 
 // Verifikasi status ban ke SERVER (bukan cuma percaya localStorage) — ini yang
@@ -69,18 +67,6 @@ async function verifyBanStatus() {
   } catch (e) {}
 }
 
-// Tombol "Cek Ulang Status" — verifikasi manual ke server, instan, gak perlu nunggu polling.
-async function manualRecheckBan() {
-  const btn = document.getElementById('jb-ban-recheck-btn');
-  if (!btn) return;
-  const original = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Mengecek...';
-  await verifyBanStatus();
-  // kalau masih ke-ban, overlay-nya masih ada -> tombol ini masih kesentuh, balikin teksnya
-  if (btn.isConnected) { btn.disabled = false; btn.textContent = original; }
-}
-
 let banPollTimer;
 function startBanStatusPolling() {
   if (banPollTimer) return;
@@ -92,31 +78,6 @@ function stopBanStatusPolling() { clearInterval(banPollTimer); banPollTimer = nu
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && banPollTimer) verifyBanStatus();
 });
-
-// Tombol "Tinjau Akun" di popup ban — ngirim notifikasi permintaan tinjauan
-// ke Admin Panel (bukan mindahin ke halaman lain). Admin yang mutusin pulihin atau nggak.
-async function requestAccountReview() {
-  const btn = document.getElementById('jb-ban-review-btn');
-  if (!btn || btn.disabled) return;
-  btn.disabled = true;
-  btn.textContent = 'Mengirim...';
-  try {
-    const res = await fetch(SERVER_URL + '/api/account-review-request', {
-      method: 'POST',
-      headers: { 'X-Device-Id': getDeviceId() }
-    });
-    const data = await res.json().catch(() => null);
-    if (data && data.requested) {
-      btn.textContent = 'Permintaan Terkirim ✓';
-    } else {
-      btn.textContent = 'Gagal, coba lagi';
-      btn.disabled = false;
-    }
-  } catch (e) {
-    btn.textContent = 'Gagal, coba lagi';
-    btn.disabled = false;
-  }
-}
 
 // Cek paling awal (sebelum apapun di-render) apakah device ini udah kena ban permanen.
 // Kalau ada status lokal "banned", langsung tampilin overlay dulu (biar gak ada jeda/flash

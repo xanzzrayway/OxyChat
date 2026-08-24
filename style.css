@@ -1529,18 +1529,9 @@
   font-family: var(--font-main); font-size: 13.5px; font-weight: 600;
   color: var(--accent-fg); background: var(--accent);
   border: none; border-radius: 11px; padding: 11px 20px;
-  cursor: pointer;
+  cursor: pointer; text-decoration: none; display: inline-block;
 }
 .jb-ban-review-btn:active { opacity: 0.85; }
-.jb-ban-review-btn:disabled { opacity: 0.55; cursor: default; }
-.jb-ban-recheck-btn {
-  margin-top: 2px;
-  font-family: var(--font-main); font-size: 13px; font-weight: 500;
-  color: var(--text-dim); background: transparent;
-  border: none; padding: 6px 10px;
-  cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
-}
-.jb-ban-recheck-btn:disabled { opacity: 0.55; cursor: default; }
 
 /* ==== Toast auto-update ==== */
 #app-update-toast {
