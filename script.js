@@ -35,7 +35,46 @@ function showJailbreakBan(reason) {
   };
   if (document.body) boot();
   else document.addEventListener('DOMContentLoaded', boot);
+  startBanStatusPolling();
 }
+
+// Bersihin overlay ban + status lokal begitu ketauan udah dipulihkan admin.
+function clearJailbreakBan() {
+  try { localStorage.removeItem(LS_BANNED); } catch (e) {}
+  stopBanStatusPolling();
+  const overlay = document.getElementById('jailbreak-ban-overlay');
+  if (overlay) overlay.classList.remove('show');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('send-btn');
+  if (input) { input.disabled = false; input.placeholder = 'Tanya Qwerty...'; }
+  if (sendBtn) sendBtn.disabled = false;
+  const reviewBtn = document.getElementById('jb-ban-review-btn');
+  if (reviewBtn) { reviewBtn.disabled = false; reviewBtn.textContent = 'Tinjau Akun'; }
+}
+
+// Verifikasi status ban ke SERVER (bukan cuma percaya localStorage) — ini yang
+// bikin popup ban otomatis ILANG begitu admin pulihin akun kamu di Admin Panel,
+// tanpa perlu hapus data browser atau apa-apa.
+async function verifyBanStatus() {
+  try {
+    const res = await fetch(SERVER_URL + '/api/account-status', {
+      headers: { 'X-Device-Id': getDeviceId() }
+    });
+    const data = await res.json();
+    if (data && data.banned === false) {
+      clearJailbreakBan();
+    } else if (data && data.banned === true) {
+      showJailbreakBan(data.reason);
+    }
+  } catch (e) {}
+}
+
+let banPollTimer;
+function startBanStatusPolling() {
+  if (banPollTimer) return;
+  banPollTimer = setInterval(verifyBanStatus, 15000); // cek ulang tiap 15 detik
+}
+function stopBanStatusPolling() { clearInterval(banPollTimer); banPollTimer = null; }
 
 // Tombol "Tinjau Akun" di popup ban — ngirim notifikasi permintaan tinjauan
 // ke Admin Panel (bukan mindahin ke halaman lain). Admin yang mutusin pulihin atau nggak.
@@ -63,6 +102,8 @@ async function requestAccountReview() {
 }
 
 // Cek paling awal (sebelum apapun di-render) apakah device ini udah kena ban permanen.
+// Kalau ada status lokal "banned", langsung tampilin overlay dulu (biar gak ada jeda/flash
+// UI kebuka), TAPI tetep diverifikasi ulang ke server buat mastiin masih valid apa nggak.
 (function checkExistingBan() {
   try {
     const raw = localStorage.getItem(LS_BANNED);
@@ -70,6 +111,7 @@ async function requestAccountReview() {
     const data = JSON.parse(raw);
     if (data && data.banned) showJailbreakBan(data.reason);
   } catch (e) {}
+  verifyBanStatus();
 })();
 
 // ==== Auto-update checker ====
