@@ -411,3 +411,33 @@ async function checkServerHealth() {
 }
 checkServerHealth();
 serverCheckTimer = setInterval(checkServerHealth, 30000); // cek ulang tiap 30 detik
+
+// ==== Popup promo kode redeem — nampilin SEKALI doang per user, per kode aktif ====
+// Kode yang dipromosiin sekarang DINAMIS dari server (bukan hardcode lagi) — admin
+// yang nentuin kode mana yang showPopup:true lewat Admin Panel.
+function closePromoPopup() {
+  const el = document.getElementById('promo-code-overlay');
+  if (el) el.classList.remove('show');
+}
+function copyPromoCode() {
+  const text = document.getElementById('promo-code-text').textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => toast('Kode disalin')).catch(() => toast('Gagal nyalin'));
+  } else {
+    toast('Gagal nyalin');
+  }
+}
+async function maybeShowPromoPopup() {
+  try {
+    const res = await fetch(SERVER_URL + '/api/promo-featured');
+    const data = await res.json();
+    if (!data || !data.code) return; // gak ada kode yang lagi dipromosiin
+    const seenKey = 'oxy_promo_' + data.code.toLowerCase() + '_seen_v1';
+    if (localStorage.getItem(seenKey)) return; // kode INI udah pernah dilihat, gak diulang
+    document.getElementById('promo-code-text').textContent = data.code;
+    document.getElementById('promo-code-stock').textContent = (typeof data.stock === 'number' ? data.stock : '∞') + ' Stok Tersisa';
+    document.getElementById('promo-code-overlay').classList.add('show');
+    localStorage.setItem(seenKey, '1'); // tandain kode ini udah dilihat
+  } catch (e) {}
+}
+maybeShowPromoPopup();

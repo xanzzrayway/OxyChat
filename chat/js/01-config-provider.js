@@ -227,13 +227,8 @@ function applyPlan(p) {
   currentPlan = p;
   localStorage.setItem(scopedKey(LS_PLAN), currentPlan);
 }
-// Kode redeem: isi manual di sini nanti.
-// Format plan penuh:      'KODENYA': { plan: 'pro' } atau { plan: 'maks' }
-// Format buka model sementara: 'KODENYA': { unlockModel: 'nama-value-model', hours: 24 }
-const REDEEM_CODES = {
-  'SPECTRAX2026PRO': { unlockModel: 'spectrax', hours: 24 },
-  'OXALPHA517R': { unlockModel: 'stealth/ox-alpha', hours: 24 },
-};
+// Semua kode redeem sekarang divalidasi & disimpen stoknya di SERVER (redeem-system.js),
+// bukan di sini lagi. File ini gak nyimpen daftar kode apapun.
 // Sistem unlock generik per-model (gantiin yang dulu cuma khusus Spectrax) —
 // tiap model punya key localStorage sendiri, jadi kode redeem apapun bisa buka model manapun.
 function getModelUnlockUntil(modelValue) {

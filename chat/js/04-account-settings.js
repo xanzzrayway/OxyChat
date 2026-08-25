@@ -36,35 +36,49 @@ function openRedeemModal() {
 function closeRedeemModal() {
   document.getElementById('redeem-modal').classList.remove('open');
 }
-function submitRedeemCode() {
+async function submitRedeemCode() {
   const input = document.getElementById('redeem-input');
   const code = input.value.trim().toUpperCase();
   if (!code) { toast('Isi kode dulu'); return; }
-  const entry = REDEEM_CODES[code];
-  if (!entry) {
-    toast('Kode gak valid atau udah gak berlaku');
-    return;
-  }
-  if (entry.unlockModel) {
-    const m = getAllModels().find(x => x.value === entry.unlockModel);
-    const until = Date.now() + (entry.hours || 24) * 3600000;
-    localStorage.setItem(scopedKey(LS_MODEL_UNLOCK_PREFIX + entry.unlockModel), String(until));
-    buildModelDD();
-    toast('Berhasil! ' + (m ? m.label : 'Model') + ' kebuka selama ' + (entry.hours || 24) + ' jam');
+  const btn = document.getElementById('redeem-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Memproses...'; }
+  try {
+    const res = await fetch(SERVER_URL + '/api/redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Device-Id': getDeviceId() },
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !data.success) {
+      toast((data && data.error) || 'Kode gak valid atau udah gak berlaku');
+      return;
+    }
+    if (data.type === 'unlock_model' && data.unlockModel) {
+      const m = getAllModels().find(x => x.value === data.unlockModel);
+      const until = Date.now() + (data.hours || 24) * 3600000;
+      localStorage.setItem(scopedKey(LS_MODEL_UNLOCK_PREFIX + data.unlockModel), String(until));
+      buildModelDD();
+      toast('Berhasil! ' + (m ? m.label : 'Model') + ' kebuka selama ' + (data.hours || 24) + ' jam');
+      closeRedeemModal();
+      return;
+    }
+    if (data.type === 'plan' && data.plan && PLANS[data.plan]) {
+      const redeemIsChange = data.plan !== currentPlan;
+      applyPlan(data.plan);
+      localStorage.setItem(scopedKey(LS_PLAN_CHOSEN), '1');
+      if (redeemIsChange) resetMsgCount();
+      buildModelDD();
+      toast('Berhasil! Sekarang kamu di ' + PLANS[data.plan].label + (data.permanent ? ' (selamanya)' : ''));
+      closeRedeemModal();
+      return;
+    }
+    toast('Kode berhasil dipake');
     closeRedeemModal();
-    return;
+  } catch (e) {
+    toast('Gagal ngirim kode, cek koneksi');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Redeem'; }
   }
-  if (!PLANS[entry.plan]) {
-    toast('Kode gak valid atau udah gak berlaku');
-    return;
-  }
-  const redeemIsChange = entry.plan !== currentPlan;
-  applyPlan(entry.plan);
-  localStorage.setItem(scopedKey(LS_PLAN_CHOSEN), '1');
-  if (redeemIsChange) resetMsgCount();
-  buildModelDD();
-  toast('Berhasil! Sekarang kamu di ' + PLANS[entry.plan].label);
-  closeRedeemModal();
 }
 function renderSidebarAccount() {
   const avatar = document.getElementById('sidebar-account-avatar');
