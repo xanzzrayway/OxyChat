@@ -242,7 +242,7 @@ function saveCustomInstr() {
 // ==== Api Key OxyChat ====
 // Katalog model publik yang bisa dipilih pas bikin API key (harus sinkron sama server)
 const APIKEY_MODEL_CATALOG = [
-  { id: 'oxy-alpha', label: 'Ox Alpha' },
+  { id: 'oxy-alpha', label: 'Laventus 3' },
   { id: 'spectrax', label: 'Spectrax' },
   { id: 'vaneus-4.0', label: 'Vaneus 4.0' },
   { id: 'oxy-nemotron', label: 'Oxy Nemotron' },

@@ -32,7 +32,7 @@ const MODEL_COLORS = {
   'sonar-deep-research': '#20808d'
 };
 const MODEL_SUBS = {
-  'stealth/ox-alpha': 'OpenRouter · Alpha',
+  'stealth/ox-alpha': 'OpenRouter · Laventus 3',
   'qwen/qwen3.6-27b': 'Reasoning · Deep',
   'openai/gpt-oss-120b': 'Model · 120B',
   'llama-3.3-70b-versatile': 'Meta · 70B',
@@ -53,7 +53,7 @@ function getModelSub(value) { return MODEL_SUBS[value] || ''; }
 
 // Kode singkat tiap model buat UI pilih model baru
 const MODEL_CODE = {
-  'stealth/ox-alpha': 'Alpha',
+  'stealth/ox-alpha': 'Laventus 3',
   'qwen/qwen3.6-27b': 'R3.5',
   'openai/gpt-oss-120b': 'X2.5',
   'llama-3.3-70b-versatile': 'X2.0',
@@ -72,11 +72,9 @@ const MODEL_CODE = {
 function getModelCode(value) { return MODEL_CODE[value] || ''; }
 // Model utama yang tampil di halaman awal sheet
 const MAIN_MODEL_VALUES = [
-  'stealth/ox-alpha', // Ox Alpha, paling atas
-  'spectrax', // Spectrax, di bawah Ox Alpha
+  'stealth/ox-alpha', // Laventus 3, paling atas
+  'spectrax', // Spectrax, di bawah Laventus 3
   'vaneus-4.0',                                    // Vaneus 4.0, di bawah Spectrax
-  'nvidia/llama-3.3-nemotron-super-49b-v1.5',       // Oxy Nemotron, dipisah dari Spectrax
-  'sonar-reasoning-pro',                            // Oxy Sonar Reasoning, di bawah Oxy Nemotron
 ];
 // Sisanya, diurutkan dari nomor kecil ke besar, ada di halaman "Lainnya"
 const OTHER_MODEL_VALUES = [
@@ -87,6 +85,8 @@ const OTHER_MODEL_VALUES = [
   'openai/gpt-oss-20b',            // X2.9, Oxy Vision
   'deepseek-ai/deepseek-r1',       // Oxy DeepSeek R1
   'meta/llama-3.3-70b-instruct',   // Oxy Llama 70B N
+  'nvidia/llama-3.3-nemotron-super-49b-v1.5', // Oxy Nemotron
+  'sonar-reasoning-pro',           // Oxy Sonar Reasoning
   'sonar-pro',                     // Oxy Sonar Pro
   'sonar',                         // Oxy Sonar
   'sonar-deep-research'            // Oxy Sonar Deep Research
