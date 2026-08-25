@@ -9,6 +9,9 @@
   }
   *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
+  /* kunci pinch-zoom & double-tap-zoom (jaga-jaga browser ngabaikan user-scalable=no di meta viewport) */
+  html, body { touch-action: pan-x pan-y; overscroll-behavior: none; }
+
   :root {
     --bg: #ffffff;
     --surface: #f7f7f7;
@@ -1494,3 +1497,44 @@
   border: none; border-radius: 9px; padding: 7px 14px; cursor: pointer;
 }
 #app-update-refresh-btn:active { opacity: 0.8; }
+
+/* ==== Popup promo kode redeem (muncul sekali) ==== */
+#promo-code-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 700;
+  zoom: 1;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  align-items: center; justify-content: center; padding: 24px;
+}
+#promo-code-overlay.show { display: flex; }
+#promo-code-box {
+  max-width: 340px; width: 100%; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  background: var(--white, var(--surface)); border: 1px solid var(--border);
+  border-radius: 20px; padding: 30px 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+#promo-code-title { font-family: var(--font-main); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+#promo-code-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px dashed var(--border2);
+  border-radius: 12px; padding: 12px 14px; width: 100%;
+}
+#promo-code-text {
+  flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--text);
+}
+#promo-code-copy-btn {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 9px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+#promo-code-copy-btn:active { background: var(--border); }
+#promo-code-stock { font-family: var(--font-main); font-size: 13.5px; font-weight: 600; color: var(--text-muted); }
+#promo-code-close-btn {
+  margin-top: 4px; width: 100%; padding: 12px; border-radius: 11px; border: none;
+  background: var(--accent); color: var(--accent-fg);
+  font-family: var(--font-main); font-size: 14px; font-weight: 700; cursor: pointer;
+}
+#promo-code-close-btn:active { opacity: 0.85; }
