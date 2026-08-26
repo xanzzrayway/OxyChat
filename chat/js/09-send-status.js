@@ -435,7 +435,6 @@ async function maybeShowPromoPopup() {
     const seenKey = 'oxy_promo_' + data.code.toLowerCase() + '_seen_v1';
     if (localStorage.getItem(seenKey)) return; // kode INI udah pernah dilihat, gak diulang
     document.getElementById('promo-code-text').textContent = data.code;
-    document.getElementById('promo-code-stock').textContent = (typeof data.stock === 'number' ? data.stock : '∞') + ' Stok Tersisa';
     document.getElementById('promo-code-overlay').classList.add('show');
     localStorage.setItem(seenKey, '1'); // tandain kode ini udah dilihat
   } catch (e) {}
