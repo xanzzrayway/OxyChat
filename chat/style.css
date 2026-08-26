@@ -1498,42 +1498,49 @@
 }
 #app-update-refresh-btn:active { opacity: 0.8; }
 
-/* ==== Popup promo kode redeem (muncul sekali) ==== */
+/* ==== Popup promo kode redeem (muncul sekali) — glassmorphic ==== */
 #promo-code-overlay {
   display: none;
   position: fixed; inset: 0; z-index: 700;
   zoom: 1;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(140,160,255,0.20), transparent 45%),
+    radial-gradient(circle at 80% 30%, rgba(255,170,200,0.18), transparent 45%),
+    color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   align-items: center; justify-content: center; padding: 24px;
 }
 #promo-code-overlay.show { display: flex; }
 #promo-code-box {
   max-width: 340px; width: 100%; text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  background: var(--white, var(--surface)); border: 1px solid var(--border);
-  border-radius: 20px; padding: 30px 24px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  background: color-mix(in srgb, var(--white, var(--surface)) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border2) 60%, transparent);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  border-radius: 22px; padding: 32px 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.14);
 }
-#promo-code-title { font-family: var(--font-main); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+#promo-code-title { font-family: var(--font-main); font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
 #promo-code-row {
   display: flex; align-items: center; gap: 8px;
-  background: var(--surface2); border: 1px dashed var(--border2);
-  border-radius: 12px; padding: 12px 14px; width: 100%;
+  background: color-mix(in srgb, var(--surface2) 55%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--border2) 70%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-radius: 13px; padding: 12px 14px; width: 100%;
 }
 #promo-code-text {
   flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700;
-  letter-spacing: 0.06em; color: var(--text);
+  letter-spacing: 0.06em; color: var(--text); word-break: break-all;
 }
 #promo-code-copy-btn {
-  flex-shrink: 0; width: 32px; height: 32px; border-radius: 9px;
-  background: var(--surface); border: 1px solid var(--border);
+  flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 65%, transparent);
+  border: 1px solid var(--border);
   color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
 #promo-code-copy-btn:active { background: var(--border); }
-#promo-code-stock { font-family: var(--font-main); font-size: 13.5px; font-weight: 600; color: var(--text-muted); }
 #promo-code-close-btn {
-  margin-top: 4px; width: 100%; padding: 12px; border-radius: 11px; border: none;
+  margin-top: 2px; width: 100%; padding: 13px; border-radius: 12px; border: none;
   background: var(--accent); color: var(--accent-fg);
   font-family: var(--font-main); font-size: 14px; font-weight: 700; cursor: pointer;
 }
