@@ -66,7 +66,7 @@ const PERPLEXITY_MODELS = [
 ];
 // Model-model ini dipanggil lewat provider OpenRouter
 const OPENROUTER_MODELS = [
-  'stealth/ox-alpha', // Ox Alpha
+  'openrouter/free', // Auto Model
 ];
 function getProviderName(modelValue) {
   if (SPECTRAX_MODELS.includes(modelValue)) return 'spectrax';
@@ -239,7 +239,7 @@ function isModelUnlocked(modelValue) { return Date.now() < getModelUnlockUntil(m
 
 const MODELS = [
   { group:'Model', items:[
-    { label:'Laventus 3', value:'stealth/ox-alpha', pro:true, icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2.3" fill="currentColor" stroke="none"/></svg>' },
+    { label:'Auto Model', value:'openrouter/free', pro:true, icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2.3" fill="currentColor" stroke="none"/></svg>' },
     { label:'Spectrax', value:'spectrax', pro:true, icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L2 12.5h12L8 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 1.5v11M4.7 7h6.6M3.3 9.7h9.4" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" opacity="0.55"/></svg>' },
     { label:'Vaneus 4.0', value:'vaneus-4.0', icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l6-2.5L14 4v5c0 3-2.5 5.5-6 6.5-3.5-1-6-3.5-6-6.5V4z"/><path d="M6 8l1.5 1.5L11 6"/></svg>' },
     { label:'Oxy Nemotron', value:'nvidia/llama-3.3-nemotron-super-49b-v1.5', icon:'<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 5l6 6M11 5l-6 6"/></svg>' },

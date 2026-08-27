@@ -15,7 +15,7 @@ function getAllModels() {
   return list;
 }
 const MODEL_COLORS = {
-  'stealth/ox-alpha': '#6366f1',
+  'openrouter/free': '#6366f1',
   'qwen/qwen3.6-27b': '#3b82f6',
   'openai/gpt-oss-120b': '#a855f7',
   'llama-3.3-70b-versatile': '#10b981',
@@ -32,7 +32,7 @@ const MODEL_COLORS = {
   'sonar-deep-research': '#20808d'
 };
 const MODEL_SUBS = {
-  'stealth/ox-alpha': 'OpenRouter · Laventus 3',
+  'openrouter/free': 'OpenRouter · Auto',
   'qwen/qwen3.6-27b': 'Reasoning · Deep',
   'openai/gpt-oss-120b': 'Model · 120B',
   'llama-3.3-70b-versatile': 'Meta · 70B',
@@ -53,7 +53,7 @@ function getModelSub(value) { return MODEL_SUBS[value] || ''; }
 
 // Kode singkat tiap model buat UI pilih model baru
 const MODEL_CODE = {
-  'stealth/ox-alpha': 'Laventus 3',
+  'openrouter/free': 'Auto Model',
   'qwen/qwen3.6-27b': 'R3.5',
   'openai/gpt-oss-120b': 'X2.5',
   'llama-3.3-70b-versatile': 'X2.0',
@@ -72,8 +72,8 @@ const MODEL_CODE = {
 function getModelCode(value) { return MODEL_CODE[value] || ''; }
 // Model utama yang tampil di halaman awal sheet
 const MAIN_MODEL_VALUES = [
-  'stealth/ox-alpha', // Laventus 3, paling atas
-  'spectrax', // Spectrax, di bawah Laventus 3
+  'openrouter/free', // Auto Model, paling atas
+  'spectrax', // Spectrax, di bawah Auto Model
   'vaneus-4.0',                                    // Vaneus 4.0, di bawah Spectrax
 ];
 // Sisanya, diurutkan dari nomor kecil ke besar, ada di halaman "Lainnya"
