@@ -73,14 +73,27 @@ function showEmptyState() {
     return;
   }
   es.id = 'empty-state';
-  es.innerHTML = '<div class="es-title">Qwerty</div><div class="es-grid">'
-    + '<button class="es-pill" onclick="fillPrompt(\'Buat HTML yang Bagus Dan Keren\')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1.8 1.5h9.4l-.9 9.3-3.8 1.4-3.8-1.4-.9-9.3z"/><path d="M4.6 5L3.5 6.5L4.6 8M8.4 5L9.5 6.5L8.4 8"/></svg>Buat HTML</button>'
-    + '<button class="es-pill" onclick="fillPrompt(\'Ajari saya coding dari dasar, mulai dari mana?\')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2.6C5.2 1.6 3.2 1.4 1.5 1.9v8.4c1.7-.5 3.7-.3 5 .7 1.3-1 3.3-1.2 5-.7V1.9c-1.7-.5-3.7-.3-5 .7z"/><path d="M6.5 2.6v8.4"/></svg>Belajar Coding</button>'
-    + '<button class="es-pill" onclick="fillPrompt(\'Qwerty itu apa dan bisa bantu apa saja?\')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6.5" cy="6.5" r="5"/><path d="M6.5 5.5v4M6.5 4h.01"/></svg>Tentang Qwerty</button>'
-    + '<button class="es-pill" onclick="fillPrompt(\'Buat script Python Yang Keren\')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10.5C2 10.5 2 6.8 5 6.8C8 6.8 8 3.2 11 3.2"/><circle cx="11" cy="3.2" r="1" fill="currentColor" stroke="none"/></svg>Buat Python</button>'
-    + '</div>'
-    + '<button class="es-pill es-pill-image" onclick="activateImageGenMode()"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="10" height="9" rx="1.3"/><circle cx="4.5" cy="5" r="1"/><path d="M1.8 8.8l2.5-2.6 2 2 2.4-2.9 2.3 2.9"/></svg>Generate Image</button>';
+  es.innerHTML = '<div class="es-title" id="es-title"><span id="es-greeting-text"></span></div>';
   $msgs.appendChild(es);
+  typeGreetingText();
+}
+
+// ==== Animasi ngetik buat sapaan di halaman awal chat kosong ====
+let greetingTypeTimer = null;
+function typeGreetingText() {
+  clearTimeout(greetingTypeTimer);
+  const el = document.getElementById('es-greeting-text');
+  if (!el) return;
+  const name = userName || 'Pengguna';
+  const full = 'Halo, ' + name + ' Mau Bikin Apa Hari Ini?';
+  el.textContent = '';
+  let i = 0;
+  (function step() {
+    if (!document.getElementById('es-greeting-text')) return; // elemen udah gak ada (pindah chat dll)
+    el.textContent = full.slice(0, i);
+    i++;
+    if (i <= full.length) greetingTypeTimer = setTimeout(step, 28);
+  })();
 }
 function toPlainSpeech(text) {
   let t = stripThinkBlocks(text || '');

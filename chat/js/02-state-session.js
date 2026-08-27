@@ -295,12 +295,12 @@ function updatePillForMode() {
   }
 }
 
-const VALID_THEMES = ['light', 'neutral-dark', 'blue-dark', 'purple-dark'];
-const THEME_LABELS = { light: 'Terang', 'neutral-dark': 'Gelap', 'blue-dark': 'Biru Gelap', 'purple-dark': 'Ungu Gelap' };
-let currentTheme = localStorage.getItem(LS_THEME) || 'light';
+const VALID_THEMES = ['light', 'neutral-dark', 'blue-dark', 'purple-dark', 'mono-bw'];
+const THEME_LABELS = { light: 'Terang', 'neutral-dark': 'Gelap', 'blue-dark': 'Biru Gelap', 'purple-dark': 'Ungu Gelap', 'mono-bw': 'Hitam Putih' };
+let currentTheme = localStorage.getItem(LS_THEME) || 'mono-bw';
 function applyTheme(t) {
   if (t === 'dark') t = 'blue-dark'; // migrasi dari versi lama
-  if (!VALID_THEMES.includes(t)) t = 'light';
+  if (!VALID_THEMES.includes(t)) t = 'mono-bw';
   currentTheme = t;
   document.documentElement.setAttribute('data-theme', currentTheme);
   localStorage.setItem(LS_THEME, currentTheme);
@@ -314,9 +314,9 @@ const FONT_LABELS = {
   "'Space Grotesk', sans-serif": 'Space Grotesk',
   "'Manrope', sans-serif": 'Manrope'
 };
-let currentFont = localStorage.getItem(LS_FONT) || "'Plus Jakarta Sans', sans-serif";
+let currentFont = localStorage.getItem(LS_FONT) || "'Inter', sans-serif";
 function applyFont(f) {
-  if (!FONT_LABELS[f]) f = "'Plus Jakarta Sans', sans-serif";
+  if (!FONT_LABELS[f]) f = "'Inter', sans-serif";
   currentFont = f;
   document.documentElement.style.setProperty('--font-main', currentFont);
   localStorage.setItem(LS_FONT, currentFont);
