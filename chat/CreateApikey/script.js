@@ -5,6 +5,7 @@ const SERVER_URL = (localStorage.getItem('oxychat_server_url_v1') || '').replace
 
 // Katalog model publik yang bisa dipilih pas bikin API key (harus sinkron sama server.js)
 const APIKEY_MODEL_CATALOG = [
+  { id: 'auto-model', label: 'Auto Model' },
   { id: 'spectrax', label: 'Spectrax' },
   { id: 'vaneus-4.0', label: 'Vaneus 4.0' },
   { id: 'oxy-nemotron', label: 'Oxy Nemotron' },
@@ -63,6 +64,15 @@ function copyCurl() {
   navigator.clipboard.writeText(document.getElementById('curl-code').textContent);
   toast('Command cURL disalin');
 }
+function updateEndpointBox() {
+  document.getElementById('endpoint-text').textContent = SERVER_URL ? (SERVER_URL + '/v1/chat') : 'Server belum kesetting';
+}
+function copyEndpoint() {
+  const text = document.getElementById('endpoint-text').textContent;
+  navigator.clipboard.writeText(text);
+  toast('Endpoint disalin');
+}
+updateEndpointBox();
 function copyResult() {
   navigator.clipboard.writeText(document.getElementById('result-value').textContent);
   toast('API key disalin');

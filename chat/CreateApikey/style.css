@@ -47,6 +47,23 @@ h1 { font-size: 20px; font-weight: 700; margin: 0 0 22px; }
 .section-label:first-of-type { margin-top: 0; }
 .desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; margin-bottom: 10px; }
 
+#endpoint-box {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 12px 12px 16px;
+}
+#endpoint-text {
+  flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 12.5px;
+  color: var(--text); word-break: break-all;
+}
+#endpoint-copy-btn {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 9px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-dim); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: background 0.12s;
+}
+#endpoint-copy-btn:hover { background: var(--border); }
+
 #curl-box {
   position: relative; background: #16181d; border-radius: 14px; padding: 14px 44px 14px 16px;
 }
