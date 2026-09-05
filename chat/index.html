@@ -1,725 +1,123 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Qwerty</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<link rel="stylesheet" href="style.css">
-<base target="_blank">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qwerty Update</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #030712;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Container Logo */
+        .logo-wrapper {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .cloud-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Outline Glow RGB yang Menjalar */
+        .cloud-glow {
+            fill: none;
+            stroke-width: 1.2;
+            stroke-linecap: round;
+            /* Membuat efek garis menjalar */
+            stroke-dasharray: 25 45;
+            animation: travel 4s linear infinite, rgbColor 8s linear infinite;
+        }
+
+        /* Bagian Dalam Awan */
+        .cloud-main {
+            fill: #0b1329;
+            stroke: rgba(255, 255, 255, 0.15);
+            stroke-width: 0.8;
+            filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.5));
+        }
+
+        /* Teks Status */
+        .status-text {
+            color: #f8fafc;
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Animasi Aliran Garis Menjalar */
+        @keyframes travel {
+            0% {
+                stroke-dashoffset: 0;
+            }
+            100% {
+                stroke-dashoffset: -70;
+            }
+        }
+
+        /* Animasi Transisi Warna RGB */
+        @keyframes rgbColor {
+            0%, 100% {
+                stroke: #ff0055;
+                filter: drop-shadow(0 0 3px #ff0055) drop-shadow(0 0 8px #ff0055);
+            }
+            25% {
+                stroke: #00ff66;
+                filter: drop-shadow(0 0 3px #00ff66) drop-shadow(0 0 8px #00ff66);
+            }
+            50% {
+                stroke: #00ffff;
+                filter: drop-shadow(0 0 3px #00ffff) drop-shadow(0 0 8px #00ffff);
+            }
+            75% {
+                stroke: #9b51e0;
+                filter: drop-shadow(0 0 3px #9b51e0) drop-shadow(0 0 8px #9b51e0);
+            }
+        }
+    </style>
 </head>
 <body>
-<div id="offline-banner">
-  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M5 12.55a10.94 10.94 0 0 1 14.08 0"/>
-    <path d="M1.42 9a15.91 15.91 0 0 1 21.16 0"/>
-    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-    <line x1="12" y1="20" x2="12" y2="20"/>
-    <line x1="1" y1="1" x2="23" y2="23"/>
-  </svg>
-  <span>Gak ada koneksi internet, cek jaringan lu dulu ya...</span>
-</div>
-<div id="server-down-banner">
-  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="2" y="3" width="20" height="7" rx="2"/>
-    <rect x="2" y="14" width="20" height="7" rx="2"/>
-    <line x1="6" y1="6.5" x2="6.01" y2="6.5"/>
-    <line x1="6" y1="17.5" x2="6.01" y2="17.5"/>
-    <line x1="1" y1="1" x2="23" y2="23"/>
-  </svg>
-  <span>Server sedang bermasalah, coba lagi beberapa saat...</span>
-  <button class="retry-btn" onclick="checkServerHealth()">Coba Lagi</button>
-</div>
-<div id="online-banner">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M5 12.55a10.94 10.94 0 0 1 14.08 0"/>
-    <path d="M1.42 9a15.91 15.91 0 0 1 21.16 0"/>
-    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-    <line x1="12" y1="20" x2="12" y2="20"/>
-  </svg>
-  <span>Terhubung Kembali</span>
-</div>
-<div id="welcome-overlay">
-  <div id="welcome-card">
-    <div id="welcome-type-row">
-      <span id="welcome-type-text"></span>
-      <span class="rgb-dot"></span>
-    </div>
-    <div id="welcome-eyebrow">Pilih Opsi Untuk Login</div>
-    <div id="g_id_onload"
-         data-client_id="772508085896-tmusan2uem9bjfeq55ed05gdof2v5pf4.apps.googleusercontent.com"
-         data-callback="handleGoogleLogin"
-         data-auto_prompt="false">
-    </div>
-    <button id="google-login-btn" onclick="triggerGoogleLogin()">
-      <svg width="19" height="19" viewBox="0 0 48 48">
-        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
-        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/>
-        <path fill="#4CAF50" d="M24 44c5.5 0 10.4-2.1 14.1-5.6l-6.5-5.5c-2 1.5-4.6 2.4-7.6 2.4-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
-        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.5 5.5C41.4 36 44 30.5 44 24c0-1.3-.1-2.7-.4-3.5z"/>
-      </svg>
-      <span>Google</span>
-    </button>
-    <div id="welcome-trial-link" onclick="startTrialSession()">Uji Coba</div>
-    <div id="welcome-hint">Login pakai akun Google buat mulai chat</div>
-  </div>
-</div>
-<div id="plan-overlay">
-  <div id="plan-card">
-    <div id="plan-title">Pilih Paket Kamu</div>
-    <div id="plan-subtitle">Bisa diganti kapan aja lewat Redeem Code</div>
-    <div id="plan-boxes">
-      <div class="plan-box" data-plan="gratis" onclick="selectPlanBox('gratis')">
-        <div class="plan-box-check"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.3 3.3L13 5"/></svg></div>
-        <div class="plan-box-icon plan-box-icon-gratis"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1c.3 2 1 3.4 1.9 4.4C10.9 6.4 12.3 7.1 14.3 7.4c-2 .3-3.4 1-4.4 1.9-.9 1-1.6 2.4-1.9 4.4-.3-2-1-3.4-1.9-4.4C4.9 8.4 3.5 7.7 1.5 7.4c2-.3 3.4-1 4.4-1.9C6.9 4.4 7.6 3 8 1z"/></svg></div>
-        <div class="plan-box-name">Paket Awal</div>
-        <div class="plan-box-feats">
-          <div class="plan-box-row">Limit key <b>1x</b></div>
-          <div class="plan-box-row">Limit pesan <b>10</b></div>
+
+    <div class="container">
+        <div class="logo-wrapper">
+            <!-- viewBox disesuaikan biar glow di luar sisi awan gak kepotong -->
+            <svg class="cloud-svg" viewBox="-4 -4 32 32" xmlns="http://www.w3.org/2000/svg">
+                <!-- Path Glow RGB (Di Belakang) -->
+                <path class="cloud-glow" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                <!-- Path Utama Awan (Di Depan) -->
+                <path class="cloud-main" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+            </svg>
         </div>
-        <div class="plan-box-price plan-box-price-free">FREE</div>
-      </div>
-      <div class="plan-box plan-box-locked" data-plan="pro" onclick="selectPlanBox('pro')">
-        <div class="plan-box-badge">Populer</div>
-        <div class="plan-box-lock"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="7.2" width="9.6" height="6.6" rx="1.3"/><path d="M5.2 7.2V4.8a2.8 2.8 0 0 1 5.6 0v2.4"/></svg></div>
-        <div class="plan-box-check"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.3 3.3L13 5"/></svg></div>
-        <div class="plan-box-icon plan-box-icon-pro"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5c2 1.4 3 3.7 3 6 0 .9-.2 1.9-.6 2.7L8 14l-2.4-3.8A6.7 6.7 0 0 1 5 7.5c0-2.3 1-4.6 3-6z"/><circle cx="8" cy="7" r="1.2" fill="currentColor" stroke="none"/><path d="M5.6 10.3l-1.8 2.2M10.4 10.3l1.8 2.2"/></svg></div>
-        <div class="plan-box-name">Pro</div>
-        <div class="plan-box-feats">
-          <div class="plan-box-row">Limit key <b>5x</b></div>
-          <div class="plan-box-row">Limit pesan <b>15</b></div>
-        </div>
-        <div class="plan-box-price">10K</div>
-      </div>
-      <div class="plan-box plan-box-locked" data-plan="maks" onclick="selectPlanBox('maks')">
-        <div class="plan-box-lock"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="7.2" width="9.6" height="6.6" rx="1.3"/><path d="M5.2 7.2V4.8a2.8 2.8 0 0 1 5.6 0v2.4"/></svg></div>
-        <div class="plan-box-check"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.3 3.3L13 5"/></svg></div>
-        <div class="plan-box-icon plan-box-icon-maks"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 6.2l2.6 1.8L8 4l3.4 4 2.6-1.8-1 5.8H3l-1-5.8z"/></svg></div>
-        <div class="plan-box-name">Maks</div>
-        <div class="plan-box-feats">
-          <div class="plan-box-row">Limit key <b>10x</b></div>
-          <div class="plan-box-row">Limit pesan <b>30</b></div>
-        </div>
-        <div class="plan-box-price">15K</div>
-      </div>
-    </div>
-    <div id="plan-locked-note">Paket Pro &amp; Maks belum bisa diakses saat ini</div>
-    <button id="plan-continue-btn" onclick="confirmPlanSelection()" disabled>Lanjutkan</button>
-  </div>
-</div>
-<div id="app">
-  <div id="sidebar" class="collapsed">
-    <div id="sidebar-header">
-      <span class="sidebar-brand-name">Qwerty</span>
-      <button class="sidebar-new-btn" onclick="newChat()">
-        <div class="new-btn-icon">
-          <svg width="16" height="16" viewBox="0 0 15 15" fill="none">
-            <path d="M2 2h11a1 1 0 011 1v7a1 1 0 01-1 1H5.5L2 13V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="7.5" y1="5" x2="7.5" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="5.5" y1="7" x2="9.5" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        Chat Baru
-      </button>
-    </div>
-    <div class="chat-mode-tabs" id="chat-mode-tabs">
-      <div class="chat-mode-tab" data-mode="normal" onclick="setChatMode('normal')">Normal Chat</div>
-      <div class="chat-mode-tab" data-mode="multi" onclick="setChatMode('multi')">Multi Chat</div>
-    </div>
-    <div id="sidebar-body">
-      <div class="hist-section-label">Terbaru</div>
-      <div id="hist-list"></div>
-    </div>
-    <div id="sidebar-account" onclick="openPersonalizeModal()">
-      <div id="sidebar-account-avatar"></div>
-      <div id="sidebar-account-info">
-        <div id="sidebar-account-name"></div>
-        <div id="sidebar-account-sub">Akun lokal</div>
-      </div>
-    </div>
-  </div>
-
-  <div id="overlay" onclick="closeSidebar()"></div>
-
-  <div id="main" style="position:relative;">
-    <div id="topbar">
-      <button id="menu-btn" class="topbar-box-btn" onclick="toggleSidebar()">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="2.5" y1="5" x2="15.5" y2="5"/><line x1="2.5" y1="9" x2="15.5" y2="9"/><line x1="2.5" y1="13" x2="15.5" y2="13"/></svg>
-      </button>
-      <div class="topbar-title" id="topbar-title" style="display:none;"></div>
-      <div id="token-info" style="display:none;"></div>
-      <div id="topbar-menu-wrap" style="position:relative;flex-shrink:0;margin-left:auto;">
-        <button class="topbar-box-btn" onclick="newChat()" title="Obrolan Baru">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.8h12a1.3 1.3 0 011.3 1.3v5.4a1.3 1.3 0 01-1.3 1.3H8.6L4.8 15.6v-2.8H3a1.3 1.3 0 01-1.3-1.3V6.1A1.3 1.3 0 013 4.8z"/></svg>
-        </button>
-      </div>
+        
+        <h1 class="status-text">Qwerty Sedang Update...</h1>
     </div>
 
-    <div id="messages-wrap">
-      <div id="multi-canvas-controls" class="multi-canvas-controls">
-        <button onclick="cycleMultiZoom()" title="Zoom">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="5"/><line x1="10.8" y1="10.8" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/></svg>
-        </button>
-        <button onclick="toggleFullscreenCanvas()" title="Fullscreen">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4"/></svg>
-        </button>
-      </div>
-      <div id="messages">
-        <div id="empty-state">
-          <div class="es-title" id="es-title">
-            <span id="es-greeting-text"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button id="scroll-btn" onclick="scrollToBottomManual()">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v9M3 8l4 4 4-4"/></svg>
-    </button>
-
-    <div id="bottom">
-      <div id="limit-timer-box">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.3"/><path d="M8 4.6V8.2l2.6 1.5"/></svg>
-        <span id="limit-timer-text">Reset dalam 15:00</span>
-      </div>
-      <div id="limit-banner">
-        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.3"/><path d="M8 5v3.4M8 11h.01"/></svg>
-        <span id="limit-banner-text">Limit Tercapai! Upgrade ke Paket Pro atau Max</span>
-        <button id="limit-banner-upgrade-btn" onclick="showPlanOverlay()">Upgrade</button>
-      </div>
-      <div id="input-box">
-        <div id="multi-chip-row" class="multi-chip-row"></div>
-        <div id="input-line">
-          <textarea id="input" placeholder="Tanya Qwerty..." rows="1"></textarea>
-        </div>
-        <div id="input-toolbar">
-          <button id="plus-btn" onclick="togglePlusSheet()">+</button>
-          <div id="model-pill-wrap">
-            <div id="model-pill" onclick="toggleModelDD()">
-              <span id="pill-icon" class="pill-icon"></span>
-              <span id="pill-label">R3.5</span>
-              <span class="pill-arrow">▲</span>
-            </div>
-          </div>
-          <button id="send-btn" onclick="handleSendBtn()">
-            <span class="icon-arrow"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M8 3L4 7M8 3L12 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span class="icon-stop"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" fill="white"/></svg></span>
-          </button>
-        </div>
-        <div id="multi-info-row" class="multi-info-row"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="plus-sheet-backdrop" onclick="closePlusSheet()"></div>
-<div id="plus-sheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-title">Lampirkan</div>
-  <div class="sheet-attach-grid">
-    <div class="sheet-attach-btn" onclick="document.getElementById('file-input-hidden').click()">
-      <div class="sheet-attach-icon">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M13 2H6a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V7z"/>
-          <polyline points="13 2 13 7 18 7"/>
-        </svg>
-      </div>
-      <span class="sheet-attach-label">File</span>
-    </div>
-    <div class="sheet-attach-btn" onclick="document.getElementById('image-input-hidden').click()">
-      <div class="sheet-attach-icon">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="16" height="16" rx="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21 15 16 10 5 21"/>
-        </svg>
-      </div>
-      <span class="sheet-attach-label">Gambar</span>
-    </div>
-  </div>
-  <hr class="sheet-divider">
-  <div class="sheet-toggle-row" id="web-search-row">
-    <div class="sheet-toggle-left">
-      <div class="sheet-toggle-icon">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="9" cy="9" r="7"/>
-          <line x1="2" y1="9" x2="16" y2="9"/>
-          <path d="M9 2a13 13 0 010 14M9 2a13 13 0 000 14"/>
-        </svg>
-      </div>
-      <div class="sheet-toggle-info">
-        <div class="sheet-toggle-name">Pencarian Web</div>
-        <div class="sheet-toggle-desc">Cari informasi terkini</div>
-      </div>
-    </div>
-    <label class="toggle-switch">
-      <input type="checkbox" id="web-search-toggle" onchange="onWebSearchToggle(this)">
-      <div class="toggle-track"></div>
-      <div class="toggle-thumb"></div>
-    </label>
-  </div>
-  <div class="sheet-toggle-row sheet-action-row" onclick="activateImageGenMode(); closePlusSheet();">
-    <div class="sheet-toggle-left">
-      <div class="sheet-toggle-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="16" rx="2.5"/>
-          <circle cx="8.5" cy="9.5" r="1.6"/>
-          <path d="M3 16l4.5-4.5a1.5 1.5 0 0 1 2.1 0L13 15l2-2a1.5 1.5 0 0 1 2.1 0L21 17"/>
-        </svg>
-      </div>
-      <div class="sheet-toggle-info">
-        <div class="sheet-toggle-name">Generate Image</div>
-        <div class="sheet-toggle-desc">Buat gambar AI dari deskripsi teks</div>
-      </div>
-    </div>
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#bbb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>
-  </div>
-</div>
-
-<div id="code-modal">
-  <div id="modal-toolbar">
-    <button class="modal-btn" onclick="closeModal()">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <div id="modal-title-box">
-      <span id="modal-title-text">Kode</span>
-    </div>
-    <div id="modal-menu-wrap">
-      <button class="modal-btn" onclick="toggleModalMenu()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="13" r="1.2" fill="currentColor"/></svg>
-      </button>
-      <div id="modal-menu-dd">
-        <div class="modal-menu-item" onclick="modalCopyCode()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="8" height="8" rx="1.5"/><path d="M2 10V2h8"/></svg>Copy</div>
-        <div class="modal-menu-item" id="modal-view-toggle-item" onclick="toggleModalView()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="12" height="10" rx="1.5"/><path d="M1 5h12"/></svg><span id="modal-view-toggle-label">Preview</span></div>
-        <div class="modal-menu-item" onclick="modalDownloadCode()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 2v7M4 6l3 3 3-3"/><path d="M2 11h10"/></svg>Download</div>
-      </div>
-    </div>
-  </div>
-  <div id="modal-body">
-    <div id="modal-code-view"><pre id="modal-code-pre"></pre></div>
-    <div id="modal-preview-view"><iframe id="modal-iframe" sandbox="allow-scripts"></iframe></div>
-  </div>
-</div>
-
-<div id="img-modal">
-  <div id="img-modal-toolbar">
-    <button class="img-modal-btn" onclick="closeImageViewer()">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <div id="img-modal-menu-wrap">
-      <button class="img-modal-btn" onclick="toggleImgModalMenu()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="13" r="1.2" fill="currentColor"/></svg>
-      </button>
-      <div id="img-modal-menu-dd">
-        <div class="modal-menu-item" onclick="downloadViewerImage()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 2v7M4 6l3 3 3-3"/><path d="M2 11h10"/></svg>Download gambar</div>
-        <div class="modal-menu-item" onclick="saveViewerImage()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="10" height="10" rx="1.5"/><circle cx="5.2" cy="5.5" r="1"/><path d="M2.5 9.5l3-3 2 2 2.5-3 1.5 2"/></svg>Simpan gambar</div>
-      </div>
-    </div>
-  </div>
-  <div id="img-modal-body">
-    <img id="img-modal-img" src="" alt="">
-  </div>
-</div>
-
-<div id="think-modal-backdrop" onclick="closeThinkModal()"></div>
-<div id="think-modal">
-  <div id="think-modal-header">
-    <div id="think-modal-title">
-      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7.5" cy="7.5" r="6"/><path d="M7.5 4.5v3l2 1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Thinking</span>
-    </div>
-    <button id="think-modal-close" onclick="closeThinkModal()">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>
-    </button>
-  </div>
-  <div id="think-modal-body"></div>
-</div>
-
-<div id="rename-modal" onclick="closeRenameModalOutside(event)">
-  <div id="rename-box">
-    <div id="rename-box-eyebrow">
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l3.5 3.5-7 7H1v-3.5l7-7z"/></svg>
-      <span id="rename-box-label">Rename Obrolan</span>
-    </div>
-    <div id="rename-box-title">Ubah nama obrolan ini</div>
-    <div id="rename-input-wrap">
-      <input id="rename-input" type="text" placeholder="Nama obrolan..." maxlength="80" autocomplete="off" spellcheck="false"/>
-      <span id="rename-char-count">0/80</span>
-    </div>
-    <div id="rename-actions">
-      <button class="rename-btn cancel" onclick="closeRenameModal()">Batal</button>
-      <button class="rename-btn confirm" onclick="confirmRename()">Simpan</button>
-    </div>
-  </div>
-</div>
-
-<div id="logout-modal-backdrop" onclick="closeLogoutModal()"></div>
-<div id="logout-modal">
-  <div id="logout-modal-title">Log Out?</div>
-  <div id="logout-modal-actions">
-    <button id="logout-cancel-btn" onclick="closeLogoutModal()">Batal</button>
-    <button id="logout-confirm-btn" onclick="confirmLogout()">Log Out</button>
-  </div>
-</div>
-
-<div id="edit-profile-backdrop" onclick="closeEditProfileModal()"></div>
-<div id="edit-profile-modal">
-  <div id="edit-profile-title">Edit Profil</div>
-  <div id="edit-profile-body">
-    <div id="edit-profile-avatar-preview"></div>
-    <input type="file" id="edit-profile-file-input" accept="image/*" style="display:none" onchange="handleProfilePhotoChange(event)">
-    <button id="edit-profile-photo-btn" onclick="document.getElementById('edit-profile-file-input').click()">Ganti Foto</button>
-    <input type="text" id="edit-profile-name-input" placeholder="Nama kamu..." maxlength="40" autocomplete="off" spellcheck="false">
-    <button id="edit-profile-reset" onclick="resetToGoogleProfile()">Kembalikan ke nama & foto Google</button>
-  </div>
-  <div id="edit-profile-actions">
-    <button id="edit-profile-cancel-btn" onclick="closeEditProfileModal()">Batal</button>
-    <button id="edit-profile-save-btn" onclick="saveEditProfile()">Simpan</button>
-  </div>
-</div>
-
-<div id="personalize-modal">
-  <button id="personalize-back-btn" onclick="closePersonalizeModal()">
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4l-6 5 6 5"/></svg>
-  </button>
-  <div id="personalize-scroll">
-    <div id="personalize-header">
-      <div id="personalize-avatar-wrap">
-        <div id="personalize-avatar"></div>
-        <button id="personalize-edit-btn" onclick="openEditProfileModal()">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M13.5 3.5l3 3L6 17H3v-3L13.5 3.5z"/>
-          </svg>
-        </button>
-      </div>
-      <div id="personalize-name"></div>
-    </div>
-    <div class="personalize-row" id="theme-row" onclick="openThemePopup(event)">
-      <div class="personalize-row-icon">
-        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="9.5" cy="9.5" r="3.4"/><path d="M9.5 1.6v2.3M9.5 14.1v2.3M1.6 9.5h2.3M14.1 9.5h2.3M4 4l1.6 1.6M13.4 13.4L15 15M4 15l1.6-1.6M13.4 5.6L15 4"/></svg>
-      </div>
-      <div class="personalize-row-text">
-        <div class="personalize-row-label">Tema</div>
-        <div class="personalize-row-value" id="theme-current-label">Terang</div>
-      </div>
-      <div class="personalize-row-chevron">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
-      </div>
-    </div>
-    <div class="personalize-row" id="font-row" onclick="openFontPopup(event)">
-      <div class="personalize-row-icon">
-        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15l4-11 4 11M5.4 11h5.2"/><path d="M12.5 15v-6c1 0 2.5.2 2.5 2s-1.5 2-2.5 2c1.2 0 2.8.3 2.8 2.1S13.9 15 12.5 15z"/></svg>
-      </div>
-      <div class="personalize-row-text">
-        <div class="personalize-row-label">Font</div>
-        <div class="personalize-row-value" id="font-current-label">Plus Jakarta Sans</div>
-      </div>
-      <div class="personalize-row-chevron">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
-      </div>
-    </div>
-    <div class="personalize-row" id="uisize-row" onclick="openUiSizePopup(event)">
-      <div class="personalize-row-icon">
-        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5v3h3M16.5 6.5v-3h-3M2.5 6.5v-3h3M16.5 12.5v3h-3"/></svg>
-      </div>
-      <div class="personalize-row-text">
-        <div class="personalize-row-label">Ukuran UI</div>
-        <div class="personalize-row-value" id="uisize-current-label">Sedang</div>
-      </div>
-      <div class="personalize-row-chevron">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
-      </div>
-    </div>
-    <div class="personalize-row" id="textsize-row" onclick="openTextSizePopup(event)">
-      <div class="personalize-row-icon">
-        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 13.5L6 5l3.5 8.5M3.2 11h5.6"/><path d="M11.5 13.5V8c1.3 0 3.5.3 3.5 2.75s-2.2 2.75-3.5 2.75z"/></svg>
-      </div>
-      <div class="personalize-row-text">
-        <div class="personalize-row-label">Ukuran Teks</div>
-        <div class="personalize-row-value" id="textsize-current-label">Sedang</div>
-      </div>
-      <div class="personalize-row-chevron">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
-      </div>
-    </div>
-    <div class="personalize-row" id="custom-instr-row" onclick="openCustomInstrModal()">
-      <div class="personalize-row-icon">
-        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 2.3l3.5 3.5L6 16.5H2.5V13L13.2 2.3z"/><path d="M11 4.5l3.5 3.5"/></svg>
-      </div>
-      <div class="personalize-row-text">
-        <div class="personalize-row-label">Instruksi Khusus</div>
-        <div class="personalize-row-value" id="custom-instr-status">Belum diatur</div>
-      </div>
-      <div class="personalize-row-chevron">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
-      </div>
-    </div>
-    <div class="personalize-row" id="apikey-row" onclick="goToApiKeyPage()">
-      <div class="personalize-row-icon">
-        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="13" r="3.2"/><path d="M8.3 10.7L15.5 3.5M15.5 3.5v3M15.5 3.5h-3"/></svg>
-      </div>
-      <div class="personalize-row-text">
-        <div class="personalize-row-label">Api Key</div>
-        <div class="personalize-row-value">Buat & kelola API key OxyChat</div>
-      </div>
-      <div class="personalize-row-chevron">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
-      </div>
-    </div>
-    <div class="personalize-row" id="request-update-row" onclick="goToRequestUpdatePage()">
-      <div class="personalize-row-icon">
-        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5h14v10h-14z"/><path d="M2.5 5l7 6 7-6"/></svg>
-      </div>
-      <div class="personalize-row-text">
-        <div class="personalize-row-label">Request Update</div>
-        <div class="personalize-row-value">Kirim saran / request fitur baru</div>
-      </div>
-      <div class="personalize-row-chevron">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
-      </div>
-    </div>
-    <div class="personalize-row" id="redeem-row" onclick="openRedeemModal()">
-      <div class="personalize-row-icon">
-        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="15" height="9" rx="2"/><path d="M2 9.5h15M6.5 9.5V15"/></svg>
-      </div>
-      <div class="personalize-row-text">
-        <div class="personalize-row-label">Redeem Code</div>
-        <div class="personalize-row-value">Dapatkan Model Pro atau lainnya</div>
-      </div>
-      <div class="personalize-row-chevron">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3.5 3.5L10 5"/></svg>
-      </div>
-    </div>
-    <div class="personalize-logout-row" onclick="logoutAccount()">
-      <div class="personalize-row-icon">
-        <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 14H3.5a1 1 0 01-1-1V3a1 1 0 011-1H6"/>
-          <path d="M10.5 11.5L14 8l-3.5-3.5"/>
-          <line x1="14" y1="8" x2="6" y2="8"/>
-        </svg>
-      </div>
-      <div class="personalize-row-label">Keluar</div>
-    </div>
-  </div>
-</div>
-
-<div id="theme-popup">
-  <div class="theme-option" data-theme-value="light" onclick="setTheme('light')">
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7.5" cy="7.5" r="3"/><path d="M7.5 1v2M7.5 12v2M1 7.5h2M12 7.5h2M3.1 3.1l1.4 1.4M10.5 10.5l1.4 1.4M3.1 11.9l1.4-1.4M10.5 4.5l1.4-1.4"/></svg>
-    <span>Terang</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-theme-value="neutral-dark" onclick="setTheme('neutral-dark')">
-    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12.8 8.9A5.8 5.8 0 016 2.2a.5.5 0 00-.6-.6A6.3 6.3 0 1013.4 9.5a.5.5 0 00-.6-.6z"/></svg>
-    <span>Gelap</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-theme-value="blue-dark" onclick="setTheme('blue-dark')">
-    <span class="theme-swatch" style="background:#2563eb"></span>
-    <span>Biru Gelap</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-theme-value="purple-dark" onclick="setTheme('purple-dark')">
-    <span class="theme-swatch" style="background:#7c3aed"></span>
-    <span>Ungu Gelap</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-theme-value="mono-bw" onclick="setTheme('mono-bw')">
-    <span class="theme-swatch" style="background:linear-gradient(135deg,#000000,#ffffff)"></span>
-    <span>Hitam Putih</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-</div>
-
-<div id="font-popup">
-  <div class="theme-option" data-font-value="'Plus Jakarta Sans', sans-serif" onclick="setFont(&quot;'Plus Jakarta Sans', sans-serif&quot;, 'Plus Jakarta Sans')">
-    <span style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; width:15px; text-align:center;">Aa</span>
-    <span>Plus Jakarta Sans</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-font-value="'Inter', sans-serif" onclick="setFont(&quot;'Inter', sans-serif&quot;, 'Inter')">
-    <span style="font-family:'Inter',sans-serif; font-weight:700; width:15px; text-align:center;">Aa</span>
-    <span>Inter</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-font-value="'Poppins', sans-serif" onclick="setFont(&quot;'Poppins', sans-serif&quot;, 'Poppins')">
-    <span style="font-family:'Poppins',sans-serif; font-weight:700; width:15px; text-align:center;">Aa</span>
-    <span>Poppins</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-font-value="'Space Grotesk', sans-serif" onclick="setFont(&quot;'Space Grotesk', sans-serif&quot;, 'Space Grotesk')">
-    <span style="font-family:'Space Grotesk',sans-serif; font-weight:700; width:15px; text-align:center;">Aa</span>
-    <span>Space Grotesk</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-font-value="'Manrope', sans-serif" onclick="setFont(&quot;'Manrope', sans-serif&quot;, 'Manrope')">
-    <span style="font-family:'Manrope',sans-serif; font-weight:700; width:15px; text-align:center;">Aa</span>
-    <span>Manrope</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-</div>
-
-<div id="uisize-popup">
-  <div class="theme-option" data-uisize-value="small" onclick="setUiSize('small')">
-    <span style="font-weight:700; width:15px; text-align:center; font-size:11px;">A</span>
-    <span>Kecil</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-uisize-value="medium" onclick="setUiSize('medium')">
-    <span style="font-weight:700; width:15px; text-align:center; font-size:14px;">A</span>
-    <span>Sedang</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-uisize-value="large" onclick="setUiSize('large')">
-    <span style="font-weight:700; width:15px; text-align:center; font-size:17px;">A</span>
-    <span>Besar</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-</div>
-
-<div id="textsize-popup">
-  <div class="theme-option" data-textsize-value="small" onclick="setTextSize('small')">
-    <span style="font-weight:700; width:15px; text-align:center; font-size:11px;">A</span>
-    <span>Kecil</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-textsize-value="medium" onclick="setTextSize('medium')">
-    <span style="font-weight:700; width:15px; text-align:center; font-size:14px;">A</span>
-    <span>Sedang</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-textsize-value="large" onclick="setTextSize('large')">
-    <span style="font-weight:700; width:15px; text-align:center; font-size:17px;">A</span>
-    <span>Besar</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-</div>
-
-
-<div id="custom-instr-modal">
-  <button id="custom-instr-back-btn" onclick="closeCustomInstrModal()">
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4l-6 5 6 5"/></svg>
-  </button>
-  <div id="custom-instr-scroll">
-    <div id="custom-instr-title">Instruksi Khusus</div>
-    <div id="custom-instr-desc">Kasih instruksi tambahan buat Qwerty, contohnya gaya respons, hal yang harus diperhatikan, atau aturan khusus. Ini bakal selalu kepake di setiap obrolan, kayak system prompt custom.</div>
-    <textarea id="custom-instr-textarea" placeholder="Contoh: Selalu jawab to the point, jangan kebanyakan basa-basi. Kalo bikin kode, kasih komentar singkat di tiap bagian penting."></textarea>
-    <div id="custom-instr-footer">
-      <span id="custom-instr-count">0/4000</span>
-      <button id="custom-instr-save-btn" onclick="saveCustomInstr()">Simpan</button>
-    </div>
-  </div>
-</div>
-
-<div id="redeem-modal">
-  <button id="redeem-back-btn" onclick="closeRedeemModal()">
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4l-6 5 6 5"/></svg>
-  </button>
-  <div id="redeem-scroll">
-    <div id="redeem-title">Redeem Code</div>
-    <div id="redeem-desc">Redeem Code bisa Dapatkan Model Pro Atau Lainnya</div>
-    <input id="redeem-input" type="text" placeholder="Masukin kode redeem..." maxlength="40" autocomplete="off" spellcheck="false">
-    <button id="redeem-submit-btn" onclick="submitRedeemCode()">Redeem</button>
-  </div>
-</div>
-
-<!-- ==== Popup promo kode redeem, muncul SEKALI doang per user ==== -->
-<div id="promo-code-overlay">
-  <div id="promo-code-box">
-    <div id="promo-code-title">Kode Redeem Baru!</div>
-    <div id="promo-code-row">
-      <span id="promo-code-text">BNDLCOD6M</span>
-      <button id="promo-code-copy-btn" onclick="copyPromoCode()" aria-label="Salin kode">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1.3"/><path d="M2.5 10.5v-7a1 1 0 0 1 1-1h7"/></svg>
-      </button>
-    </div>
-    <button id="promo-code-close-btn" onclick="closePromoPopup()">Tutup</button>
-  </div>
-</div>
-
-<div id="effort-popup">
-  <div class="theme-option" data-effort-value="rendah" onclick="setEffort('rendah')">
-    <span>Rendah</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-effort-value="sedang" onclick="setEffort('sedang')">
-    <span>Sedang</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-effort-value="tinggi" onclick="setEffort('tinggi')">
-    <span>Tinggi</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-  <div class="theme-option" data-effort-value="maks" onclick="setEffort('maks')">
-    <span>Maks</span>
-    <svg class="theme-check" width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7l3 3 5-6.5"/></svg>
-  </div>
-</div>
-
-<div id="model-sheet-backdrop" onclick="closeModelDD()"></div>
-<div id="model-sheet">
-  <div class="sheet-handle"></div>
-  <div id="model-sheet-pages">
-    <div id="model-page-main" class="model-page">
-      <div class="sheet-title">Pilih Model</div>
-      <div class="model-main-grid" id="model-main-grid"></div>
-      <div id="thinking-toggle-row" class="sheet-toggle-row">
-        <div class="sheet-toggle-left">
-          <div class="sheet-toggle-icon">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2C6 2 4 4.2 4 6.8c0 1.7.8 2.9 1.7 3.8.6.6 1 1.3 1 2v.4h4.6v-.4c0-.7.4-1.4 1-2 .9-.9 1.7-2.1 1.7-3.8C14 4.2 12 2 9 2z"/><line x1="7.2" y1="15" x2="10.8" y2="15"/><line x1="7.6" y1="16.6" x2="10.4" y2="16.6"/></svg>
-          </div>
-          <div class="sheet-toggle-info">
-            <div class="sheet-toggle-name">Thinking</div>
-            <div class="sheet-toggle-desc">Semua model mikir dulu sebelum jawab</div>
-          </div>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="thinking-toggle" onchange="onThinkingToggle(this)">
-          <div class="toggle-track"></div>
-          <div class="toggle-thumb"></div>
-        </label>
-      </div>
-      <div id="effort-row" class="sheet-toggle-row" onclick="openEffortPopup(event)">
-        <div class="sheet-toggle-left">
-          <div class="sheet-toggle-icon">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14a6 6 0 0112 0"/><path d="M9 14L11.5 9"/><circle cx="9" cy="14" r="1"/></svg>
-          </div>
-          <div class="sheet-toggle-info">
-            <div class="sheet-toggle-name">Upaya</div>
-            <div class="sheet-toggle-desc" id="effort-current-label">Sedang</div>
-          </div>
-        </div>
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted)"><path d="M3 5l3.5 3.5L10 5"/></svg>
-      </div>
-      <button class="model-more-btn" onclick="openModelPage('other')">
-        <span class="dots-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="3" cy="7" r="1.4"/><circle cx="7" cy="7" r="1.4"/><circle cx="11" cy="7" r="1.4"/></svg></span>
-        Lainnya
-      </button>
-    </div>
-    <div id="model-page-other" class="model-page">
-      <div class="model-page-header">
-        <button class="model-back-btn" onclick="closeModelPage()">
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3l-5 4.5 5 4.5"/></svg>
-        </button>
-        <div class="sheet-title" style="margin:0">Model Lainnya</div>
-      </div>
-      <div class="model-other-list" id="model-other-list"></div>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
-
-<script src="js/01-config-provider.js"></script>
-<script src="js/02-state-session.js"></script>
-<script src="js/03-ui-interactions.js"></script>
-<script src="js/04-account-settings.js"></script>
-<script src="js/05-thinking-effort.js"></script>
-<script src="js/06-modals-render.js"></script>
-<script src="js/07-history-messages.js"></script>
-<script src="js/08-streaming.js"></script>
-<script src="js/09-send-status.js"></script>
-<input type="file" id="file-input-hidden" accept="*/*" style="display:none" onchange="onFileSelected(this)">
-<input type="file" id="image-input-hidden" accept="image/*" style="display:none" onchange="onImageSelected(this)">
 </body>
 </html>
