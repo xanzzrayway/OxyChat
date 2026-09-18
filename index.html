@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qwerty Ultra-Premium Portfolio</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Three.js & GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        /* CSS RESET & VARIABLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --text-muted: #666666;
+            --border-color: #e5e5e5;
+            --hover-bg: #f5f5f7;
+            --transition-smooth: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d1d6;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-color);
+        }
+
+        /* HEADER & NAVIGATION */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 24px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            transition: var(--transition-smooth);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -1.5px;
+            color: var(--text-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-box {
+            width: 32px;
+            height: 32px;
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .logo:hover .logo-box::before {
+            left: 100%;
+        }
+
+        nav {
+            display: flex;
+            gap: 40px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            font-weight: 600;
+            position: relative;
+            opacity: 0.8;
+            transition: var(--transition-smooth);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--text-color);
+            transition: var(--transition-smooth);
+        }
+
+        nav a:hover {
+            opacity: 1;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* HERO SECTION WITH SPLIT SCREEN */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 8% 80px;
+            gap: 60px;
+            position: relative;
+        }
+
+        .hero-info {
+            flex: 1.2;
+            z-index: 10;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: #f5f5f7;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #00ff66;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff66;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+            100% { transform: scale(0.9); opacity: 1; }
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            letter-spacing: -3px;
+            margin-bottom: 24px;
+            line-height: 1.05;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 580px;
+            margin-bottom: 48px;
+        }
+
+        /* PREMIUM BUTTON (FIXED ANIMATION DETECT) */
+        .btn-black {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            padding: 20px 44px;
+            border-radius: 100px;
+            font-weight: 700;
+            text-decoration: none;
+            gap: 12px;
+            border: 2px solid var(--text-color);
+            position: relative;
+            z-index: 20;
+            overflow: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-black:hover {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-black svg {
+            transition: transform 0.4s ease;
+        }
+
+        .btn-black:hover svg {
+            transform: translateX(8px);
+        }
+
+        /* 3D CANVAS AREA */
+        .hero-3d {
+            flex: 1;
+            height: 600px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: grab;
+        }
+
+        .hero-3d:active {
+            cursor: grabbing;
+        }
+
+        #canvas3d {
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* PORTFOLIO SECTION */
+        .portfolio-section {
+            padding: 140px 8%;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 80px;
+        }
+
+        .section-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+        }
+
+        .section-desc {
+            color: var(--text-muted);
+            max-width: 400px;
+            font-size: 1rem;
+        }
+
+        .grid-portfolio {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 40px;
+        }
+
+        .portfolio-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            transition: transform 0.1s ease;
+            transform-style: preserve-3d;
+        }
+
+        .portfolio-card:hover {
+            border-color: var(--text-color);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.06);
+        }
+
+        .card-img-wrapper {
+            width: 100%;
+            height: 280px;
+            background-color: #f9f9fb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .card-visual {
+            font-size: 6rem;
+            font-weight: 900;
+            color: #eaeaea;
+            letter-spacing: -6px;
+            user-select: none;
+            transition: var(--transition-smooth);
+        }
+
+        .portfolio-card:hover .card-visual {
+            transform: translateZ(50px) scale(1.1);
+            color: #111111;
+        }
+
+        .card-info {
+            padding: 36px;
+        }
+
+        .card-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+            letter-spacing: -0.5px;
+        }
+
+        .card-info p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 28px;
+            min-height: 50px;
+        }
+
+        .card-tech-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .card-tech-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            background-color: #f5f5f7;
+            border-radius: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        /* TECH STACK SECTION */
+        .tech-section {
+            padding: 140px 8%;
+            background-color: #fafafa;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 24px;
+            margin-top: 60px;
+        }
+
+        .tech-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 36px 24px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .tech-card:hover {
+            border-color: var(--text-color);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        }
+
+        .tech-logo {
+            width: 48px;
+            height: 48px;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tech-card:hover .tech-logo {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .tech-logo svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--text-color);
+        }
+
+        /* FOOTER */
+        footer {
+            padding: 60px 8%;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 1200px) {
+            .hero h1 {
+                font-size: 3.8rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .hero {
+                flex-direction: column-reverse;
+                text-align: center;
+                padding-top: 140px;
+                gap: 40px;
+            }
+            .hero-info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .hero-3d {
+                width: 100%;
+                height: 400px;
+            }
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 16px 24px;
+            }
+            nav {
+                display: none;
+            }
+            .portfolio-section, .tech-section {
+                padding: 100px 24px;
+            }
+            .hero h1 {
+                font-size: 3rem;
+            }
+            footer {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVIGATION -->
+    <header>
+        <a href="#" class="logo">
+            <div class="logo-box">Q</div> QWERTY
+        </a>
+        <nav>
+            <a href="#portfolio">Portofolio</a>
+            <a href="#tech">Teknologi</a>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-info">
+            <div class="badge">
+                <div class="badge-dot"></div>
+                Tersedia untuk Pekerjaan Lepas
+            </div>
+            <h1>Chat Dengan Qwerty</h1>
+            <p>Sistem interaksi modern berkecepatan tinggi yang dikombinasikan dengan kecerdasan buatan super responsif. Temukan cara baru mengelola project lu.</p>
+            <a href="chat/index.html" class="btn-black">
+                [Mulai]
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+        </div>
+        <div class="hero-3d">
+            <canvas id="canvas3d"></canvas>
+        </div>
+    </section>
+
+    <!-- PORTFOLIO SECTION -->
+    <section class="portfolio-section" id="portfolio">
+        <div class="section-header">
+            <h2 class="section-title">Portofolio Pilihan</h2>
+            <p class="section-desc">Eksplorasi project tingkat lanjut yang dibangun dengan ketelitian performa, skalabilitas, dan desain modern.</p>
+        </div>
+        
+        <div class="grid-portfolio">
+            
+            <!-- Project 1 -->
+            <div class="portfolio-card" data-tilt>
+                <div class="card-inner">
+                    <div class="card-img-wrapper">
+                        <div class="card-visual">WEB</div>
+                    </div>
+                    <div class="card-info">
+                        <h3>Qwerty Chat Interface</h3>
+                        <p>Platform interaksi real-time modern menggunakan arsitektur event-driven yang cepat dan ringan.</p>
+                        <div class="card-tech-list">
+                            <span class="card-tech-tag">HTML</span>
+                            <span class="card-tech-tag">CSS</span>
+                            <span class="card-tech-tag">Script.js</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="portfolio-card" data-tilt>
+                <div class="card-inner">
+                    <div class="card-img-wrapper">
+                        <div class="card-visual">DATA</div>
+                    </div>
+                    <div class="card-info">
+                        <h3>Supabase Sync DB</h3>
+                        <p>Penyimpanan cloud super aman dengan enkripsi tingkat lanjut dan real-time listener.</p>
+                        <div class="card-tech-list">
+                            <span class="card-tech-tag">Supabase</span>
+                            <span class="card-tech-tag">.env</span>
+                            <span class="card-tech-tag">Node.js</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="portfolio-card" data-tilt>
+                <div class="card-inner">
+                    <div class="card-img-wrapper">
+                        <div class="card-visual">SYS</div>
+                    </div>
+                    <div class="card-info">
+                        <h3>Advanced Express API</h3>
+                        <p>Server backend tangguh dengan integrasi secure headers, rate limiter, dan performa tinggi.</p>
+                        <div class="card-tech-list">
+                            <span class="card-tech-tag">Node.js</span>
+                            <span class="card-tech-tag">Server.js</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- TECH STACK SECTION -->
+    <section class="tech-section" id="tech">
+        <div class="section-header">
+            <h2 class="section-title">Teknologi Yang Dipakai</h2>
+            <p class="section-desc">Pondasi teknologi modern yang digunakan untuk menjamin kecepatan, skalabilitas, dan keandalan kode.</p>
+        </div>
+
+        <div class="tech-grid">
+            
+            <!-- Node.js -->
+            <div class="tech-card">
+                <div class="tech-logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                </div>
+                Node.js
+            </div>
+            
+            <!-- Server.js -->
+            <div class="tech-card">
+                <div class="tech-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                        <line x1="6" y1="6" x2="6" y2="6"></line>
+                        <line x1="6" y1="18" x2="6" y2="18"></line>
+                    </svg>
+                </div>
+                Server.js
+            </div>
+
+            <!-- .env -->
+            <div class="tech-card">
+                <div class="tech-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                .env
+            </div>
+
+            <!-- Script.js -->
+            <div class="tech-card">
+                <div class="tech-logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 3h18v18H3V3zm11.5 11c0 .83-.67 1.5-1.5 1.5H11v-1h2v-1h-3v-4h4v1h-3v1h3c.83 0 1.5.67 1.5 1.5zM8 12v3c0 .83-.67 1.5-1.5 1.5H5v-1h1.5V12H5v-1h3z"/>
+                    </svg>
+                </div>
+                Script.js
+            </div>
+
+            <!-- Supabase -->
+            <div class="tech-card">
+                <div class="tech-logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21.362 9.421H13.17l5.06-8.158a.421.421 0 0 0-.543-.591l-11.83 6.9a.421.421 0 0 0-.083.693l8.192 6.314H5.776a.421.421 0 0 0-.323.692l11.83 14.142a.421.421 0 0 0 .736-.317l-1.341-9.92a.421.421 0 0 0 .323-.393l4.362-9.362a.421.421 0 0 0-.363-.59z"/>
+                    </svg>
+                </div>
+                Supabase
+            </div>
+
+            <!-- Index.html -->
+            <div class="tech-card">
+                <div class="tech-logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2L2 22h20L12 2zm0 3.99L18.41 18H5.59L12 5.99zM11 14h2v2h-2v-2zm0-4h2v3h-2v-3z"/>
+                    </svg>
+                </div>
+                Index.html
+            </div>
+
+            <!-- Style.css -->
+            <div class="tech-card">
+                <div class="tech-logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                </div>
+                Style.css
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2025 Qwerty. Created by Abid (@BidzQwerty).</p>
+        <p>Trial Account Version</p>
+    </footer>
+
+    <!-- INTERACTIVE SCRIPTS -->
+    <script>
+        /* 1. THREE.JS - ADVANCED 3D SCENE CONFIGURATION */
+        const container = document.querySelector('.hero-3d');
+        const canvas = document.querySelector('#canvas3d');
+        
+        const scene = new THREE.Scene();
+        
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+        camera.position.z = 6.5;
+
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Create Main 3D Torus Knot
+        const geometry = new THREE.TorusKnotGeometry(1.2, 0.35, 150, 20);
+        
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            roughness: 0.1,
+            metalness: 0.9,
+            wireframe: true
+        });
+        
+        const mainMesh = new THREE.Mesh(geometry, material);
+        scene.add(mainMesh);
+
+        // Particle Dust Field
+        const particleGeo = new THREE.BufferGeometry();
+        const particleCount = 200;
+        const posArray = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 10;
+        }
+
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particleMat = new THREE.PointsMaterial({
+            size: 0.03,
+            color: 0x000000,
+            transparent: true,
+            opacity: 0.4
+        });
+
+        const particles = new THREE.Points(particleGeo, particleMat);
+        scene.add(particles);
+
+        // Lighting System
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        // Smooth Mouse Tracking
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - window.innerWidth / 2) * 0.0005;
+            mouseY = (e.clientY - window.innerHeight / 2) * 0.0005;
+        });
+
+        const clock = new THREE.Clock();
+
+        // Animation Loop
+        const animate = () => {
+            const elapsedTime = clock.getElapsedTime();
+
+            mainMesh.rotation.y = elapsedTime * 0.15;
+            mainMesh.rotation.z = elapsedTime * 0.05;
+            particles.rotation.y = -elapsedTime * 0.02;
+
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            mainMesh.rotation.x += targetY * 1.5;
+            mainMesh.rotation.y += targetX * 1.5;
+            particles.rotation.x += targetY * 0.5;
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        };
+
+        animate();
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        /* 2. GSAP ENTRANCE ANIMATIONS */
+        gsap.from("header", { duration: 1.2, y: -100, opacity: 0, ease: "power4.out" });
+        gsap.from(".badge", { duration: 1, y: 30, opacity: 0, delay: 0.4, ease: "power3.out" });
+        gsap.from(".hero h1", { duration: 1.2, y: 40, opacity: 0, delay: 0.6, ease: "power4.out" });
+        gsap.from(".hero p", { duration: 1.2, y: 30, opacity: 0, delay: 0.8, ease: "power3.out" });
+        gsap.from(".btn-black", { duration: 1, scale: 0.8, opacity: 0, delay: 1, ease: "back.out(1.7)" });
+        gsap.from(".hero-3d", { duration: 1.5, opacity: 0, scale: 0.8, delay: 0.8, ease: "power4.out" });
+
+        /* 3. INTERACTIVE 3D TILT EFFECT FOR CARDS */
+        const cards = document.querySelectorAll('.portfolio-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width/2;
+                const y = e.clientY - rect.top - rect.height/2;
+                
+                gsap.to(card.querySelector('.card-inner'), {
+                    rotateY: x * 0.06,
+                    rotateX: -y * 0.06,
+                    transformPerspective: 1000,
+                    ease: "power1.out",
+                    duration: 0.3
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card.querySelector('.card-inner'), {
+                    rotateY: 0,
+                    rotateX: 0,
+                    ease: "power3.out",
+                    duration: 0.6
+                });
+            });
+        });
+    </script>
+</body>
+</html>
